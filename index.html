@@ -1,554 +1,1335 @@
 <!DOCTYPE html>
-<html lang="ta">
+<html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockPulse AI - Complete Dashboard</title>
-    <style>
-        :root {
-            --bg-color: #0f1115;
-            --card-bg: #1a1d24;
-            --text-main: #ffffff;
-            --text-muted: #a0a5b0;
-            --accent-blue: #3186ff;
-            --accent-green: #00c853;
-            --accent-red: #ff3d00;
-            --border-color: #2a2e39;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 15px;
-        }
-
-        .header-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-
-        .top-stats {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .score-box {
-            text-align: center;
-        }
-
-        .score-value {
-            font-size: 38px;
-            font-weight: bold;
-            color: var(--accent-green);
-        }
-
-        .score-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        .streak-meter {
-            display: flex;
-            gap: 8px;
-        }
-
-        .streak-dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background-color: #333;
-        }
-
-        .streak-dot.active {
-            background-color: var(--accent-green);
-            box-shadow: 0 0 10px var(--accent-green);
-        }
-
-        .accuracy-graph {
-            height: 80px;
-            width: 100%;
-            background: #111;
-            border-radius: 8px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: flex-end;
-            padding: 5px 0;
-            gap: 4px;
-        }
-
-        .accuracy-bar {
-            flex: 1;
-            background: rgba(0, 200, 83, 0.3);
-            border-top: 3px solid var(--accent-green);
-            transition: height 0.5s ease;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding-bottom: 5px;
-        }
-
-        .tab-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            padding: 12px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-
-        .tab-btn.active {
-            background: var(--accent-blue);
-            border-color: var(--accent-blue);
-            color: var(--text-main);
-            box-shadow: 0 4px 15px rgba(49, 134, 255, 0.3);
-        }
-
-        .section-title {
-            font-size: 20px;
-            margin-bottom: 15px;
-            color: var(--accent-blue);
-            border-left: 4px solid var(--accent-blue);
-            padding-left: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .stock-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-        }
-
-        .stock-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-
-        .stock-info h3 {
-            margin: 0;
-            font-size: 22px;
-        }
-
-        .stock-info span {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .badge-india { background: rgba(255, 152, 0, 0.2); color: #ff9800; border: 1px solid #ff9800; }
-        .badge-us { background: rgba(33, 150, 243, 0.2); color: #2196f3; border: 1px solid #2196f3; }
-
-        .analysis-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .analysis-box {
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 12px;
-        }
-
-        .box-title {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .price-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
-
-        .price-row:last-child { margin-bottom: 0; }
-        .label { font-size: 13px; }
-        .val { font-size: 14px; font-weight: bold; }
-        .up { color: var(--accent-green); }
-        .down { color: var(--accent-red); }
-
-        .graham-badge {
-            background: rgba(255, 235, 59, 0.1);
-            border: 1px solid #ffee58;
-            color: #ffee58;
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 12px;
-            margin-bottom: 15px;
-        }
-
-        .target-bar {
-            background: #111;
-            padding: 12px 15px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid var(--border-color);
-        }
-
-        .risk-alert {
-            background: rgba(255, 61, 0, 0.15);
-            border: 1px solid var(--accent-red);
-            color: var(--accent-red);
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        /* Portfolio Table Styles */
-        .portfolio-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .portfolio-table th, .portfolio-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .portfolio-table th {
-            background: rgba(0,0,0,0.2);
-            color: var(--text-muted);
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-
-        .portfolio-table td { font-size: 14px; }
-
-        /* To-Do List Styles */
-        .todo-container {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-        }
-
-        .todo-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .todo-item:last-child { border-bottom: none; }
-
-        .checkbox {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            border: 2px solid var(--accent-blue);
-            margin-right: 15px;
-            cursor: pointer;
-        }
-
-        .todo-text { font-size: 15px; }
-
-        .section-panel { display: block; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Stock Pulse — AI Automated Market & Portfolio Engine</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #090d16;
+      color: #f1f5f9;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass-card {
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.92) 0%, rgba(13, 19, 31, 0.96) 100%);
+      border: 1px solid rgba(51, 65, 85, 0.55);
+    }
+    .tab-active {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+    }
+  </style>
 </head>
-<body>
+<body class="min-h-screen antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
 
-    <!-- Header with Scoreboard and Accuracy Graph -->
-    <div class="header-container">
-        <div class="top-stats">
-            <div class="score-box">
-                <div class="score-value">95/100</div>
-                <div class="score-label">Daily Success Rate</div>
-            </div>
-            <div class="streak-meter">
-                <div class="streak-dot active"></div>
-                <div class="streak-dot active"></div>
-                <div class="streak-dot active"></div>
-                <div class="streak-dot active"></div>
-                <div class="streak-dot"></div>
-            </div>
+  <!-- Toast Notification -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-[#090d16]/95 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
+          <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 17l6-6 4 4 8-8m0 0h-5m5 0v5" />
+          </svg>
         </div>
-        <div class="accuracy-graph">
-            <div class="accuracy-bar" style="height: 75%;"></div>
-            <div class="accuracy-bar" style="height: 82%;"></div>
-            <div class="accuracy-bar" style="height: 65%;"></div>
-            <div class="accuracy-bar" style="height: 90%;"></div>
-            <div class="accuracy-bar" style="height: 95%;"></div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white truncate">Stock Pulse</h1>
+            <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> AUTO ENGINE
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 truncate">NSE/BSE &bull; NASDAQ/NYSE &bull; 13 Nov 2026 Close</p>
         </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="btn-lang-toggle" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          EN / தமிழ்
+        </button>
+        <button id="btn-open-add-stock-top" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition shadow-sm">
+          + Add Stocks
+        </button>
+      </div>
     </div>
+  </header>
 
-    <!-- Navigation Tabs -->
-    <div class="tabs">
-        <button class="tab-btn active" onclick="showSection('intraday')">Intraday Engine</button>
-        <button class="tab-btn" onclick="showSection('longterm')">Graham + Buffett Long-Term</button>
-        <button class="tab-btn" onclick="showSection('portfolio')">Your Portfolio</button>
-        <button class="tab-btn" onclick="showSection('todo')">Trading To-Do List</button>
-    </div>
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5">
 
-    <!-- INTRADAY SECTION -->
-    <div id="intraday-section" class="section-panel">
-        <div class="section-title">Autonomous Intraday Picks</div>
-        
-        <!-- Stock 1 -->
-        <div class="stock-card">
-            <div class="stock-header">
-                <div class="stock-info">
-                    <h3>RELIANCE</h3>
-                    <span>NSE • Energy & Telecom</span>
-                </div>
-                <span class="badge badge-india">INDIA</span>
+    <!-- Top-Level 0-100 Daily Success Rate Scoreboard & 5-Day Winner Benchmark -->
+    <section class="glass-card rounded-2xl p-4 sm:p-5 shadow-xl">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+        <!-- Left Score & Streak -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-400" data-i18n="scoreboard_label">Daily Success Rate (Intraday + Long-Term)</p>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span id="top-daily-score" class="text-4xl sm:text-5xl font-extrabold text-emerald-400 tracking-tight">90</span>
+                <span class="text-lg font-bold text-slate-500">/ 100</span>
+                <span id="winner-badge" class="hidden ml-2 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40">
+                  WINNER 5/5
+                </span>
+              </div>
             </div>
-            
-            <div class="analysis-grid">
-                <div class="analysis-box">
-                    <span class="box-title">Intraday Levels</span>
-                    <div class="price-row"><span class="label">Entry</span><span class="val">₹1,250.00</span></div>
-                    <div class="price-row"><span class="label">Target</span><span class="val up">₹1,287.50</span></div>
-                    <div class="price-row"><span class="label">Stop-Loss</span><span class="val down">₹1,232.00</span></div>
-                </div>
-                <div class="analysis-box">
-                    <span class="box-title">Technical Status</span>
-                    <div class="price-row"><span class="label">VWAP</span><span class="val">₹1,255.00</span></div>
-                    <div class="price-row"><span class="label">RSI (15m)</span><span class="val up">62 (Bullish)</span></div>
-                    <div class="price-row"><span class="label">Status</span><span class="val up">Active</span></div>
-                </div>
+            <button id="btn-quick-audit" type="button" class="px-3 py-2 rounded-xl text-xs font-semibold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 transition shrink-0">
+              Run EOD Audit
+            </button>
+          </div>
+
+          <!-- 5-Consecutive-Day 100/100 Streak Tracker -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3">
+            <div class="flex items-center justify-between text-xs mb-2">
+              <span class="font-semibold text-slate-300" data-i18n="streak_label">5-Day 100/100 Winner Streak</span>
+              <span id="streak-counter-text" class="font-bold text-amber-400">3 / 5 Days</span>
             </div>
-            <div class="risk-alert">
-                ⚠️ Volume Spike Detected. Strict Stop-Loss mandatory.
+            <div id="streak-pills" class="grid grid-cols-5 gap-2"></div>
+          </div>
+
+          <!-- Long-Term & Intraday Mini Stats -->
+          <div class="grid grid-cols-2 gap-2.5 text-xs">
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-2.5">
+              <span class="text-slate-400 block">Intraday Accuracy</span>
+              <span id="mini-intraday-acc" class="text-sm font-bold text-white mt-0.5 block">9 / 10 Hit (90%)</span>
             </div>
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-2.5">
+              <span class="text-slate-400 block">Long-Term (1Y/3Y)</span>
+              <span class="text-sm font-bold text-emerald-400 mt-0.5 block">92% On-Track</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Stock 2 -->
-        <div class="stock-card">
-            <div class="stock-header">
-                <div class="stock-info">
-                    <h3>NVDA</h3>
-                    <span>NASDAQ • Semiconductors</span>
-                </div>
-                <span class="badge badge-us">US</span>
-            </div>
-            
-            <div class="analysis-grid">
-                <div class="analysis-box">
-                    <span class="box-title">Intraday Levels</span>
-                    <div class="price-row"><span class="label">Entry</span><span class="val">$140.00</span></div>
-                    <div class="price-row"><span class="label">Target</span><span class="val up">$146.00</span></div>
-                    <div class="price-row"><span class="label">Stop-Loss</span><span class="val down">$137.50</span></div>
-                </div>
-                <div class="analysis-box">
-                    <span class="box-title">Technical Status</span>
-                    <div class="price-row"><span class="label">VWAP</span><span class="val">$141.20</span></div>
-                    <div class="price-row"><span class="label">RSI (15m)</span><span class="val">58 (Neutral)</span></div>
-                    <div class="price-row"><span class="label">Status</span><span class="val">Watching</span></div>
-                </div>
-            </div>
+        <!-- Right Trend Line Chart -->
+        <div class="lg:col-span-7">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-300">Daily Success Rate Trend (0–100 Scale)</span>
+            <span class="text-[11px] text-slate-400">Auto-scored vs. Market Close</span>
+          </div>
+          <div class="relative h-44 sm:h-48 w-full bg-slate-900/50 border border-slate-800/70 rounded-xl p-2">
+            <canvas id="scoreTrendChart"></canvas>
+          </div>
         </div>
-    </div>
+      </div>
+    </section>
 
-    <!-- LONG TERM SECTION -->
-    <div id="longterm-section" class="section-panel" style="display: none;">
-        <div class="section-title">Graham & Buffett Growth Portfolio</div>
+    <!-- 6-Section Navigation Tabs -->
+    <nav aria-label="Primary Sections" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+      <button type="button" data-tab="indian" class="nav-tab tab-active px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition shrink-0">
+        1. Indian Stocks <span class="ml-1 text-[10px] opacity-80">(20)</span>
+      </button>
+      <button type="button" data-tab="us" class="nav-tab bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition shrink-0">
+        2. US Stocks <span class="ml-1 text-[10px] opacity-80">(20)</span>
+      </button>
+      <button type="button" data-tab="portfolio" class="nav-tab bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition shrink-0">
+        3. Your Portfolio <span id="badge-portfolio-count" class="ml-1 text-[10px] opacity-80">(4)</span>
+      </button>
+      <button type="button" data-tab="todo" class="nav-tab bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition shrink-0">
+        4. To-Do List <span id="badge-todo-count" class="ml-1 text-[10px] opacity-80">(4)</span>
+      </button>
+      <button type="button" data-tab="oneai" class="nav-tab bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition shrink-0">
+        5. One AI <span class="ml-1 text-[10px] opacity-80">(₹1L&rarr;₹10Cr)</span>
+      </button>
+      <button type="button" data-tab="intraday" class="nav-tab bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition shrink-0">
+        6. Intraday <span class="ml-1 text-[10px] opacity-80">(10)</span>
+      </button>
+    </nav>
 
-        <!-- Stock 1 -->
-        <div class="stock-card">
-            <div class="stock-header">
-                <div class="stock-info">
-                    <h3>TATA MOTORS</h3>
-                    <span>NSE • Automotive / EV</span>
-                </div>
-                <span class="badge badge-india">INDIA</span>
-            </div>
-            
-            <div class="graham-badge">
-                💡 Graham Net-Net Compliance: Strong Margin of Safety & Economic Moat via EV leadership.
-            </div>
+    <!-- SECTION 1: INDIAN STOCKS (TOP 20) -->
+    <section id="section-indian" class="tab-section space-y-4">
+      <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-white">Top 20 Actionable Indian Stocks (NSE)</h2>
+            <p class="text-xs text-slate-400">Auto-ranked via news cross-referencing, RSI(14), 50/200 DMA &amp; Buffett/Graham fundamentals.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input id="indian-search" type="text" placeholder="Search ticker or sector..." class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 w-44 sm:w-52" />
+            <select id="indian-signal-filter" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+              <option value="ALL">All Signals</option>
+              <option value="STRONG BUY">Strong Buy</option>
+              <option value="BUY">Buy</option>
+              <option value="HOLD">Hold</option>
+            </select>
+          </div>
+        </div>
+        <div id="indian-stocks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+      </div>
+    </section>
 
-            <div class="analysis-grid">
-                <div class="analysis-box">
-                    <span class="box-title">Fundamental Metrics</span>
-                    <div class="price-row"><span class="label">CMP</span><span class="val">₹950.00</span></div>
-                    <div class="price-row"><span class="label">P/E Ratio</span><span class="val">18.5</span></div>
-                    <div class="price-row"><span class="label">Debt/Equity</span><span class="val">0.4</span></div>
-                </div>
-                <div class="analysis-box">
-                    <span class="box-title">Product Catalyst</span>
-                    <div class="price-row"><span class="label">Launch</span><span class="val">Curvv EV Scaling</span></div>
-                    <div class="price-row"><span class="label">Impact</span><span class="val up">High Margin</span></div>
-                </div>
-            </div>
+    <!-- SECTION 2: US STOCKS (TOP 20) -->
+    <section id="section-us" class="tab-section hidden space-y-4">
+      <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-white">Top 20 Actionable US Stocks (NASDAQ / NYSE)</h2>
+            <p class="text-xs text-slate-400">Auto-ranked via US earnings/news catalysts, technical momentum &amp; intrinsic value margin.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input id="us-search" type="text" placeholder="Search ticker or sector..." class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 w-44 sm:w-52" />
+            <select id="us-signal-filter" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+              <option value="ALL">All Signals</option>
+              <option value="STRONG BUY">Strong Buy</option>
+              <option value="BUY">Buy</option>
+              <option value="HOLD">Hold</option>
+            </select>
+          </div>
+        </div>
+        <div id="us-stocks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+      </div>
+    </section>
 
-            <div class="target-bar">
-                <span class="label">AI Price Forecast:</span>
-                <div>
-                    <span class="label">1Y Target:</span><span class="val up" style="margin-right: 15px;">₹1,250</span>
-                    <span class="label">3Y Target:</span><span class="val up">₹1,850</span>
-                </div>
-            </div>
+    <!-- SECTION 3: YOUR PORTFOLIO (WITH ADD STOCKS) -->
+    <section id="section-portfolio" class="tab-section hidden space-y-4">
+      <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-white">Your Portfolio &amp; AI Rating Engine</h2>
+            <p class="text-xs text-slate-400">Add your Indian or US stocks for instant Good/Bad ratings and Buy/Sell/Hold actions synced to your To-Do List.</p>
+          </div>
+          <button id="btn-open-add-stock" type="button" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition shadow-lg shadow-emerald-500/20 shrink-0">
+            + Add Stocks
+          </button>
         </div>
 
-        <!-- Stock 2 -->
-        <div class="stock-card">
-            <div class="stock-header">
-                <div class="stock-info">
-                    <h3>AAPL</h3>
-                    <span>NASDAQ • Consumer Electronics</span>
-                </div>
-                <span class="badge badge-us">US</span>
-            </div>
-            
-            <div class="graham-badge">
-                💡 Buffett Moat: Unmatched Brand Loyalty & High Free Cash Flow Generation.
-            </div>
-
-            <div class="analysis-grid">
-                <div class="analysis-box">
-                    <span class="box-title">Fundamental Metrics</span>
-                    <div class="price-row"><span class="label">CMP</span><span class="val">$225.00</span></div>
-                    <div class="price-row"><span class="label">P/E Ratio</span><span class="val">30.0</span></div>
-                    <div class="price-row"><span class="label">ROE</span><span class="val">>150%</span></div>
-                </div>
-                <div class="analysis-box">
-                    <span class="box-title">Product Catalyst</span>
-                    <div class="price-row"><span class="label">Launch</span><span class="val">AI Ecosystem</span></div>
-                    <div class="price-row"><span class="label">Impact</span><span class="val up">Service Revenue</span></div>
-                </div>
-            </div>
-
-            <div class="target-bar">
-                <span class="label">AI Price Forecast:</span>
-                <div>
-                    <span class="label">1Y Target:</span><span class="val up" style="margin-right: 15px;">$270.00</span>
-                    <span class="label">3Y Target:</span><span class="val up">$380.00</span>
-                </div>
-            </div>
+        <!-- Portfolio Summary Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block">Total Holdings</span>
+            <span id="pf-total-count" class="text-lg font-bold text-white">0</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block">Good Rated</span>
+            <span id="pf-good-count" class="text-lg font-bold text-emerald-400">0</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block">Bad / Exit Alert</span>
+            <span id="pf-bad-count" class="text-lg font-bold text-rose-400">0</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block">Net Portfolio P&amp;L</span>
+            <span id="pf-net-pnl" class="text-lg font-bold text-emerald-400">+0.00%</span>
+          </div>
         </div>
-    </div>
 
-    <!-- NEW: YOUR PORTFOLIO SECTION -->
-    <div id="portfolio-section" class="section-panel" style="display: none;">
-        <div class="section-title">
-            Your Personal Portfolio
-            <button onclick="alert('Add Stock Feature Triggered')" style="background: var(--accent-blue); border: none; color: white; padding: 6px 12px; border-radius: 15px; font-size: 12px; cursor: pointer;">+ Add Stock</button>
-        </div>
-        
-        <table class="portfolio-table">
-            <thead>
-                <tr>
-                    <th>Stock</th>
-                    <th>Qty</th>
-                    <th>Avg Price</th>
-                    <th>Current</th>
-                    <th>P&L</th>
-                </tr>
+        <!-- Portfolio Table -->
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead class="bg-slate-900/90 text-slate-400 text-[11px] uppercase tracking-wider">
+              <tr>
+                <th class="py-3 px-3">Stock</th>
+                <th class="py-3 px-3">Qty</th>
+                <th class="py-3 px-3">Avg Buy</th>
+                <th class="py-3 px-3">Current</th>
+                <th class="py-3 px-3">P&amp;L</th>
+                <th class="py-3 px-3">Rating</th>
+                <th class="py-3 px-3">Action Advice</th>
+                <th class="py-3 px-3 text-right">Remove</th>
+              </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td><strong>RELIANCE</strong><br><span style="font-size: 11px; color: var(--text-muted);">NSE</span></td>
-                    <td>50</td>
-                    <td>₹1,200</td>
-                    <td>₹1,250</td>
-                    <td><span class="up">+₹2,500 (+4.1%)</span></td>
-                </tr>
-                <tr>
-                    <td><strong>NVDA</strong><br><span style="font-size: 11px; color: var(--text-muted);">NASDAQ</span></td>
-                    <td>10</td>
-                    <td>$120.00</td>
-                    <td>$140.00</td>
-                    <td><span class="up">+$200.00 (+16.6%)</span></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+            <tbody id="portfolio-tbody" class="divide-y divide-slate-800/80 bg-slate-950/40"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-    <!-- NEW: TRADING TO-DO LIST SECTION -->
-    <div id="todo-section" class="section-panel" style="display: none;">
-        <div class="section-title">
-            Trading To-Do & Action Items
-            <button onclick="addNewTodo()" style="background: var(--accent-blue); border: none; color: white; padding: 6px 12px; border-radius: 15px; font-size: 12px; cursor: pointer;">+ Add Task</button>
+    <!-- SECTION 4: TO-DO LIST -->
+    <section id="section-todo" class="tab-section hidden space-y-4">
+      <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-white">Actionable Trade To-Do List</h2>
+            <p class="text-xs text-slate-400">Automatically synced from Your Portfolio ratings (Buy, Sell, Hold checkpoints).</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" data-todo-filter="ALL" class="todo-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 text-slate-950">All</button>
+            <button type="button" data-todo-filter="PENDING" class="todo-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300">Pending</button>
+            <button type="button" data-todo-filter="DONE" class="todo-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300">Completed</button>
+          </div>
+        </div>
+        <div id="todo-list-container" class="space-y-2.5"></div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: ONE AI (1 LAKH -> 10 CRORES VIRTUAL CAPITAL) -->
+    <section id="section-oneai" class="tab-section hidden space-y-4">
+      <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-bold text-white">One AI — Autonomous Capital Engine</h2>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">5-STOCK COMPOUNDER</span>
+            </div>
+            <p class="text-xs text-slate-400">Virtual ₹1,00,000 capital targeting ₹10,00,00,000 (10 Crores) in 1 year via autonomous top-5 stock selection &amp; daily P&amp;L.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btn-oneai-sim-day" type="button" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">
+              Simulate Trading Day
+            </button>
+            <button id="btn-oneai-rebalance" type="button" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              Rebalance 5 Stocks
+            </button>
+          </div>
         </div>
 
-        <div class="todo-container" id="todo-list">
-            <div class="todo-item">
-                <div class="checkbox" onclick="toggleTask(this)"></div>
-                <div class="todo-text">Check Pre-market Volume Spike for RELIANCE at 9:15 AM</div>
-            </div>
-            <div class="todo-item">
-                <div class="checkbox" onclick="toggleTask(this)"></div>
-                <div class="todo-text">Verify Stop-Loss placement for NVDA position</div>
-            </div>
-            <div class="todo-item">
-                <div class="checkbox" onclick="toggleTask(this)"></div>
-                <div class="todo-text">Review 15m VWAP before initiating Intraday entry</div>
-            </div>
+        <!-- Capital KPI Row -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+            <span class="text-[11px] text-slate-400 block">Starting Capital</span>
+            <span class="text-lg font-bold text-slate-200">₹1,00,000</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+            <span class="text-[11px] text-slate-400 block">Current Virtual Value</span>
+            <span id="oneai-current-val" class="text-lg font-bold text-emerald-400">₹1,00,000</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+            <span class="text-[11px] text-slate-400 block">Today's P&amp;L</span>
+            <span id="oneai-daily-pnl" class="text-lg font-bold text-emerald-400">+₹0 (0.00%)</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+            <span class="text-[11px] text-slate-400 block">1-Year Target</span>
+            <span class="text-lg font-bold text-amber-400">₹10,00,00,000</span>
+          </div>
         </div>
+
+        <!-- Progress Bar toward 10 Cr -->
+        <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3.5">
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="font-semibold text-slate-300">Progress to ₹10 Crore Goal (<span id="oneai-day-count">Day 1</span> / 252)</span>
+            <span id="oneai-progress-pct" class="font-bold text-emerald-400">0.10%</span>
+          </div>
+          <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+            <div id="oneai-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all duration-300" style="width: 1%"></div>
+          </div>
+        </div>
+
+        <!-- One AI Growth Chart -->
+        <div class="relative h-56 w-full bg-slate-900/50 border border-slate-800/70 rounded-xl p-3">
+          <canvas id="oneAiChart"></canvas>
+        </div>
+
+        <!-- Best 5 Autonomous Stocks -->
+        <div>
+          <h3 class="text-sm font-bold text-white mb-2.5">One AI Active 5-Stock Basket (20% Allocation Each)</h3>
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead class="bg-slate-900/90 text-slate-400 text-[11px] uppercase">
+                <tr>
+                  <th class="py-2.5 px-3">Stock</th>
+                  <th class="py-2.5 px-3">Allocated</th>
+                  <th class="py-2.5 px-3">Entry</th>
+                  <th class="py-2.5 px-3">Current</th>
+                  <th class="py-2.5 px-3">Daily P&amp;L</th>
+                  <th class="py-2.5 px-3">AI Catalyst</th>
+                </tr>
+              </thead>
+              <tbody id="oneai-stocks-tbody" class="divide-y divide-slate-800/80 bg-slate-950/40"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: INTRADAY (10 DAILY PICKS & SCORING) -->
+    <section id="section-intraday" class="tab-section hidden space-y-4">
+      <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-white">Intraday 10-Stock Tracker &amp; Scoring</h2>
+            <p class="text-xs text-slate-400">Tracks 10 daily picks against predicted Entry, Target &amp; Stop-Loss. 10/10 hits = 100/100 Daily Score.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btn-intraday-perfect" type="button" class="px-3 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">
+              Audit 100/100 Day (+1 Streak)
+            </button>
+            <button id="btn-intraday-mixed" type="button" class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              Simulate Mixed EOD
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead class="bg-slate-900/90 text-slate-400 text-[11px] uppercase">
+              <tr>
+                <th class="py-2.5 px-3">#</th>
+                <th class="py-2.5 px-3">Stock</th>
+                <th class="py-2.5 px-3">Direction</th>
+                <th class="py-2.5 px-3">Entry</th>
+                <th class="py-2.5 px-3">Target</th>
+                <th class="py-2.5 px-3">Stop-Loss</th>
+                <th class="py-2.5 px-3">Close</th>
+                <th class="py-2.5 px-3">Status</th>
+                <th class="py-2.5 px-3 text-right">Toggle</th>
+              </tr>
+            </thead>
+            <tbody id="intraday-tbody" class="divide-y divide-slate-800/80 bg-slate-950/40"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ADD STOCKS MODAL (YOUR PORTFOLIO) -->
+  <div id="modal-add-stock" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="glass-card w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Add Stocks to Your Portfolio</h3>
+        <button id="btn-close-add-modal" type="button" class="text-slate-400 hover:text-white text-lg font-bold px-2">&times;</button>
+      </div>
+      <form id="form-add-stock" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Market</label>
+          <select id="add-market" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+            <option value="IN">Indian Market (NSE / ₹)</option>
+            <option value="US">US Market (NASDAQ/NYSE / $)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Quick Pick from Top 20 (Optional)</label>
+          <select id="add-preset" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+            <option value="">-- Custom Ticker or Select --</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Ticker Symbol *</label>
+            <input id="add-ticker" type="text" required placeholder="e.g. RELIANCE or NVDA" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white uppercase focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Quantity *</label>
+            <input id="add-qty" type="number" min="1" step="1" required value="10" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Avg Buy Price *</label>
+            <input id="add-buy-price" type="number" min="0.01" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Current Price *</label>
+            <input id="add-curr-price" type="number" min="0.01" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button id="btn-cancel-add-modal" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950">Add &amp; Analyze</button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <script>
-        function showSection(sectionId) {
-            // Hide all sections
-            document.querySelectorAll('.section-panel').forEach(panel => {
-                panel.style.display = 'none';
-            });
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            // Show target section and set active tab
-            document.getElementById(sectionId + '-section').style.display = 'block';
-            event.currentTarget.classList.add('active');
+  <!-- STOCK DETAIL MODAL -->
+  <div id="modal-stock-detail" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="glass-card w-full max-w-lg rounded-2xl p-5 space-y-4 shadow-2xl">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 id="detail-ticker" class="text-lg font-extrabold text-white">RELIANCE</h3>
+            <span id="detail-signal" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300">STRONG BUY</span>
+          </div>
+          <p id="detail-name" class="text-xs text-slate-400 mt-0.5">Reliance Industries Ltd.</p>
+        </div>
+        <button id="btn-close-detail-modal" type="button" class="text-slate-400 hover:text-white text-lg font-bold px-2">&times;</button>
+      </div>
+      <div id="detail-body" class="space-y-3 text-xs"></div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button id="btn-detail-add-pf" type="button" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950">+ Add to Your Portfolio</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // GROUNDED MARKET DATA (NOV 13, 2026 CLOSE)
+    // ==========================================
+    const INDIAN_STOCKS = [
+      { ticker: 'RELIANCE', name: 'Reliance Industries Ltd.', market: 'IN', price: 1340.60, change: 0.42, sector: 'Energy & Digital', rsi: 54, dma: 'Above 50 & 200 DMA', support: 1310, resistance: 1395, target1Y: 1620, target3Y: 2150, signal: 'STRONG BUY', news: 'Jio AI cloud & retail expansion driving margin upside.' },
+      { ticker: 'BHARTIARTL', name: 'Bharti Airtel Ltd.', market: 'IN', price: 2106.00, change: 0.48, sector: 'Telecom', rsi: 61, dma: 'Above 50 & 200 DMA', support: 2040, resistance: 2180, target1Y: 2450, target3Y: 3100, signal: 'STRONG BUY', news: 'ARPU growth & 5G enterprise traction outperforming peers.' },
+      { ticker: 'TCS', name: 'Tata Consultancy Services', market: 'IN', price: 2406.80, change: -0.35, sector: 'IT Services', rsi: 48, dma: 'Near 200 DMA', support: 2350, resistance: 2520, target1Y: 2850, target3Y: 3600, signal: 'BUY', news: 'BFSI AI transformation deal pipeline remains resilient.' },
+      { ticker: 'HDFCBANK', name: 'HDFC Bank Ltd.', market: 'IN', price: 800.20, change: -1.49, sector: 'Banking', rsi: 42, dma: 'Below 50 DMA', support: 785, resistance: 840, target1Y: 960, target3Y: 1250, signal: 'BUY', news: 'Deposit growth stabilizing; attractive Graham margin of safety.' },
+      { ticker: 'ICICIBANK', name: 'ICICI Bank Ltd.', market: 'IN', price: 1572.00, change: -1.13, sector: 'Banking', rsi: 53, dma: 'Above 200 DMA', support: 1530, resistance: 1640, target1Y: 1850, target3Y: 2350, signal: 'STRONG BUY', news: 'Consistent ROE & sector-leading asset quality metrics.' },
+      { ticker: 'INFY', name: 'Infosys Ltd.', market: 'IN', price: 1138.90, change: -1.07, sector: 'IT Services', rsi: 45, dma: 'Above 200 DMA', support: 1110, resistance: 1210, target1Y: 1380, target3Y: 1750, signal: 'BUY', news: 'Topaz AI platform adoption accelerating US enterprise renewals.' },
+      { ticker: 'SBIN', name: 'State Bank of India', market: 'IN', price: 1080.00, change: -0.60, sector: 'PSU Banking', rsi: 56, dma: 'Above 50 & 200 DMA', support: 1045, resistance: 1135, target1Y: 1280, target3Y: 1650, signal: 'STRONG BUY', news: 'Strong corporate credit demand and low net NPA ratio.' },
+      { ticker: 'LT', name: 'Larsen & Toubro Ltd.', market: 'IN', price: 4158.70, change: 0.31, sector: 'Infrastructure', rsi: 58, dma: 'Above 50 & 200 DMA', support: 4050, resistance: 4320, target1Y: 4850, target3Y: 6200, signal: 'STRONG BUY', news: 'Record domestic & Middle East EPC order book visibility.' },
+      { ticker: 'BEL', name: 'Bharat Electronics Ltd.', market: 'IN', price: 402.70, change: -0.52, sector: 'Defence', rsi: 52, dma: 'Above 200 DMA', support: 388, resistance: 430, target1Y: 495, target3Y: 680, signal: 'STRONG BUY', news: 'Indigenous defence electronics orders & high ROE moat.' },
+      { ticker: 'ETERNAL', name: 'Eternal (Zomato) Ltd.', market: 'IN', price: 363.95, change: -0.11, sector: 'Consumer Tech', rsi: 63, dma: 'Above 50 & 200 DMA', support: 348, resistance: 385, target1Y: 440, target3Y: 620, signal: 'BUY', news: 'Blinkit quick-commerce profitability expanding near 52W highs.' },
+      { ticker: 'ITC', name: 'ITC Ltd.', market: 'IN', price: 283.35, change: -0.25, sector: 'FMCG', rsi: 46, dma: 'Near 200 DMA', support: 275, resistance: 302, target1Y: 340, target3Y: 430, signal: 'BUY', news: 'Free cash flow compounder with steady dividend yield.' },
+      { ticker: 'AXISBANK', name: 'Axis Bank Ltd.', market: 'IN', price: 1334.30, change: -0.64, sector: 'Banking', rsi: 49, dma: 'Above 200 DMA', support: 1295, resistance: 1390, target1Y: 1560, target3Y: 1980, signal: 'BUY', news: 'Retail loan mix optimization supporting NIM stability.' },
+      { ticker: 'ADANIPORTS', name: 'Adani Ports & SEZ', market: 'IN', price: 1912.40, change: -0.91, sector: 'Logistics', rsi: 59, dma: 'Above 50 & 200 DMA', support: 1850, resistance: 1990, target1Y: 2250, target3Y: 2900, signal: 'BUY', news: 'Cargo volume growth hitting new highs across west-coast ports.' },
+      { ticker: 'ADANIENT', name: 'Adani Enterprises Ltd.', market: 'IN', price: 2693.00, change: -1.77, sector: 'Conglomerate', rsi: 44, dma: 'Below 50 DMA', support: 2610, resistance: 2840, target1Y: 3150, target3Y: 4100, signal: 'HOLD', news: 'Green hydrogen & airport capex scaling; watch debt levels.' },
+      { ticker: 'SUNPHARMA', name: 'Sun Pharmaceutical Ind.', market: 'IN', price: 1885.50, change: 0.28, sector: 'Pharma', rsi: 55, dma: 'Above 50 & 200 DMA', support: 1830, resistance: 1960, target1Y: 2200, target3Y: 2800, signal: 'BUY', news: 'US specialty dermatology portfolio driving margin expansion.' },
+      { ticker: 'TITAN', name: 'Titan Company Ltd.', market: 'IN', price: 4846.10, change: -0.97, sector: 'Consumer', rsi: 51, dma: 'Above 200 DMA', support: 4720, resistance: 5050, target1Y: 5550, target3Y: 7100, signal: 'BUY', news: 'Festive jewellery demand & Tanishq store expansion strong.' },
+      { ticker: 'TATAPOWER', name: 'Tata Power Company Ltd.', market: 'IN', price: 357.00, change: -0.83, sector: 'Renewables', rsi: 43, dma: 'Near 200 DMA', support: 345, resistance: 382, target1Y: 430, target3Y: 580, signal: 'BUY', news: 'Solar rooftop & EV charging network scaling nationwide.' },
+      { ticker: 'TATASTEEL', name: 'Tata Steel Ltd.', market: 'IN', price: 186.81, change: -0.68, sector: 'Metals', rsi: 47, dma: 'Below 50 DMA', support: 178, resistance: 202, target1Y: 225, target3Y: 290, signal: 'HOLD', news: 'Domestic steel demand steady; European turnaround in focus.' },
+      { ticker: 'JIOFIN', name: 'Jio Financial Services', market: 'IN', price: 228.11, change: -1.34, sector: 'Fintech', rsi: 41, dma: 'Below 50 DMA', support: 218, resistance: 248, target1Y: 295, target3Y: 450, signal: 'BUY', news: 'BlackRock AMC JV rollout unlocking long-term wealth moat.' },
+      { ticker: 'BAJFINANCE', name: 'Bajaj Finance Ltd.', market: 'IN', price: 1101.85, change: -1.18, sector: 'NBFC', rsi: 46, dma: 'Near 200 DMA', support: 1065, resistance: 1165, target1Y: 1320, target3Y: 1750, signal: 'STRONG BUY', news: '800+ AI agents driving 10% of disbursals & lower opex.' }
+    ];
+
+    const US_STOCKS = [
+      { ticker: 'NVDA', name: 'NVIDIA Corporation', market: 'US', price: 162.85, change: -2.01, sector: 'Semiconductors', rsi: 49, dma: 'Above 200 DMA', support: 155, resistance: 176, target1Y: 215, target3Y: 310, signal: 'STRONG BUY', news: 'Data center AI GPU demand & software moat at 20.6x P/E.' },
+      { ticker: 'META', name: 'Meta Platforms Inc.', market: 'US', price: 641.69, change: 2.90, sector: 'Big Tech / AI', rsi: 64, dma: 'Above 50 & 200 DMA', support: 610, resistance: 675, target1Y: 750, target3Y: 980, signal: 'STRONG BUY', news: 'AI ad targeting & Reels monetization boosting free cash flow.' },
+      { ticker: 'MSFT', name: 'Microsoft Corporation', market: 'US', price: 523.88, change: 0.17, sector: 'Cloud & AI', rsi: 56, dma: 'Above 50 & 200 DMA', support: 505, resistance: 545, target1Y: 610, target3Y: 790, signal: 'STRONG BUY', news: 'Azure AI enterprise workloads & Copilot seat growth steady.' },
+      { ticker: 'AAPL', name: 'Apple Inc.', market: 'US', price: 356.27, change: 0.39, sector: 'Consumer Tech', rsi: 58, dma: 'Above 50 & 200 DMA', support: 342, resistance: 372, target1Y: 410, target3Y: 520, signal: 'BUY', news: 'Services recurring revenue & on-device Apple Intelligence cycle.' },
+      { ticker: 'GOOGL', name: 'Alphabet Inc.', market: 'US', price: 295.77, change: -0.98, sector: 'Search & Cloud', rsi: 51, dma: 'Above 200 DMA', support: 284, resistance: 315, target1Y: 355, target3Y: 460, signal: 'STRONG BUY', news: 'Google Cloud margin expansion & Gemini enterprise adoption.' },
+      { ticker: 'AMZN', name: 'Amazon.com Inc.', market: 'US', price: 266.66, change: -0.29, sector: 'Cloud & Retail', rsi: 53, dma: 'Above 50 & 200 DMA', support: 256, resistance: 282, target1Y: 320, target3Y: 425, signal: 'STRONG BUY', news: 'AWS AI infrastructure & retail fulfillment automation gains.' },
+      { ticker: 'LLY', name: 'Eli Lilly and Co.', market: 'US', price: 1443.50, change: 1.26, sector: 'Healthcare', rsi: 62, dma: 'Above 50 & 200 DMA', support: 1390, resistance: 1510, target1Y: 1680, target3Y: 2150, signal: 'BUY', news: 'GLP-1 metabolic pipeline expansion maintaining wide moat.' },
+      { ticker: 'BRK.B', name: 'Berkshire Hathaway B', market: 'US', price: 592.94, change: 0.53, sector: 'Diversified', rsi: 57, dma: 'Above 50 & 200 DMA', support: 578, resistance: 612, target1Y: 665, target3Y: 840, signal: 'BUY', news: 'Fortress balance sheet & Treasury yield income cushion.' },
+      { ticker: 'TSM', name: 'Taiwan Semiconductor', market: 'US', price: 398.73, change: -1.67, sector: 'Foundry', rsi: 48, dma: 'Above 200 DMA', support: 382, resistance: 425, target1Y: 480, target3Y: 640, signal: 'STRONG BUY', news: '2nm & CoWoS packaging capacity sold out for AI accelerators.' },
+      { ticker: 'AVGO', name: 'Broadcom Inc.', market: 'US', price: 347.01, change: -4.76, sector: 'Semiconductors', rsi: 41, dma: 'Near 200 DMA', support: 332, resistance: 378, target1Y: 425, target3Y: 560, signal: 'BUY', news: 'Custom AI ASICs & VMware recurring software cash flows.' },
+      { ticker: 'AMD', name: 'Advanced Micro Devices', market: 'US', price: 534.06, change: -8.75, sector: 'Semiconductors', rsi: 36, dma: 'Below 50 DMA', support: 510, resistance: 585, target1Y: 640, target3Y: 850, signal: 'BUY', news: 'Oversold pullback after data-center GPU share gains.' },
+      { ticker: 'TSLA', name: 'Tesla Inc.', market: 'US', price: 390.22, change: -1.82, sector: 'EV & Robotics', rsi: 47, dma: 'Above 200 DMA', support: 372, resistance: 420, target1Y: 465, target3Y: 650, signal: 'HOLD', news: 'FSD & Megapack energy storage offsetting auto margin pressure.' },
+      { ticker: 'WMT', name: 'Walmart Inc.', market: 'US', price: 128.09, change: 1.51, sector: 'Retail', rsi: 60, dma: 'Above 50 & 200 DMA', support: 123, resistance: 134, target1Y: 148, target3Y: 185, signal: 'BUY', news: 'E-commerce & high-margin advertising segment growing.' },
+      { ticker: 'MU', name: 'Micron Technology', market: 'US', price: 778.31, change: -2.52, sector: 'Memory / AI', rsi: 45, dma: 'Above 200 DMA', support: 745, resistance: 825, target1Y: 910, target3Y: 1180, signal: 'BUY', news: 'HBM4 high-bandwidth memory demand tight into 2027.' },
+      { ticker: 'AMAT', name: 'Applied Materials', market: 'US', price: 370.50, change: -2.74, sector: 'Semi Equip', rsi: 44, dma: 'Near 200 DMA', support: 355, resistance: 395, target1Y: 440, target3Y: 570, signal: 'BUY', news: 'Gate-all-around fab tooling orders accelerating.' },
+      { ticker: 'ORCL', name: 'Oracle Corporation', market: 'US', price: 125.35, change: -1.38, sector: 'Cloud DB', rsi: 46, dma: 'Near 200 DMA', support: 120, resistance: 136, target1Y: 155, target3Y: 205, signal: 'BUY', news: 'OCI AI cluster backlog & multicloud database partnerships.' },
+      { ticker: 'DELL', name: 'Dell Technologies', market: 'US', price: 344.53, change: -7.18, sector: 'AI Servers', rsi: 38, dma: 'Below 50 DMA', support: 328, resistance: 375, target1Y: 415, target3Y: 530, signal: 'HOLD', news: 'Pullback after strong AI server rack shipment rally.' },
+      { ticker: 'INTC', name: 'Intel Corporation', market: 'US', price: 59.66, change: -2.52, sector: 'Semiconductors', rsi: 40, dma: 'Below 50 DMA', support: 56, resistance: 66, target1Y: 78, target3Y: 105, signal: 'HOLD', news: 'Q3 revenue $16.5B (+21% YoY); PC softness vs AI server growth.' },
+      { ticker: 'BE', name: 'Bloom Energy Corp.', market: 'US', price: 191.99, change: -4.92, sector: 'Clean Power', rsi: 42, dma: 'Above 200 DMA', support: 180, resistance: 215, target1Y: 245, target3Y: 340, signal: 'BUY', news: 'Fuel-cell power contracts for hyperscale AI data centers.' },
+      { ticker: 'ZM', name: 'Zoom Communications', market: 'US', price: 99.80, change: 2.15, sector: 'Enterprise SaaS', rsi: 59, dma: 'Above 50 & 200 DMA', support: 94, resistance: 106, target1Y: 122, target3Y: 155, signal: 'BUY', news: 'AI Companion enterprise upsells lifting net dollar retention.' }
+    ];
+
+    const ALL_STOCKS = [...INDIAN_STOCKS, ...US_STOCKS];
+
+    // ==========================================
+    // PERSISTENT APP STATE (SAFE LOCALSTORAGE)
+    // ==========================================
+    const STORAGE_KEY = 'stock_pulse_v3_state';
+
+    const DEFAULT_STATE = {
+      activeTab: 'portfolio',
+      lang: 'EN',
+      todoFilter: 'ALL',
+      streakDays: 3,
+      scoreHistory: [
+        { day: 'Nov 07', score: 80 },
+        { day: 'Nov 10', score: 90 },
+        { day: 'Nov 11', score: 100 },
+        { day: 'Nov 12', score: 100 },
+        { day: 'Nov 13', score: 100 },
+        { day: 'Today', score: 90 }
+      ],
+      portfolio: [
+        { id: 'pf-1', ticker: 'ACME', market: 'IN', qty: 5, buyPrice: 61.03, currPrice: 26.58 },
+        { id: 'pf-2', ticker: 'AMBUJACEM', market: 'IN', qty: 20, buyPrice: 690.00, currPrice: 382.70 },
+        { id: 'pf-3', ticker: 'BAJAJHFL', market: 'IN', qty: 10, buyPrice: 144.82, currPrice: 81.47 },
+        { id: 'pf-4', ticker: 'BANKBARODA', market: 'IN', qty: 20, buyPrice: 275.05, currPrice: 273.84 },
+        { id: 'pf-5', ticker: 'BEPL', market: 'IN', qty: 10, buyPrice: 144.30, currPrice: 112.70 },
+        { id: 'pf-6', ticker: 'CDSL', market: 'IN', qty: 10, buyPrice: 0.00, currPrice: 1447.00 },
+        { id: 'pf-7', ticker: 'EMCURE', market: 'IN', qty: 14, buyPrice: 1008.00, currPrice: 2361.70 },
+        { id: 'pf-8', ticker: 'EXICOM', market: 'IN', qty: 10, buyPrice: 448.00, currPrice: 139.61 },
+        { id: 'pf-9', ticker: 'EXIDEIND', market: 'IN', qty: 11, buyPrice: 566.55, currPrice: 372.00 },
+        { id: 'pf-10', ticker: 'FEDERALBNK', market: 'IN', qty: 30, buyPrice: 236.58, currPrice: 361.45 },
+        { id: 'pf-11', ticker: 'GOLDIETF', market: 'IN', qty: 100, buyPrice: 60.00, currPrice: 116.01 },
+        { id: 'pf-12', ticker: 'HCLTECH', market: 'IN', qty: 10, buyPrice: 1050.00, currPrice: 1378.00 },
+        { id: 'pf-13', ticker: 'HDFCBANK', market: 'IN', qty: 12, buyPrice: 755.83, currPrice: 804.00 },
+        { id: 'pf-14', ticker: 'IREDA', market: 'IN', qty: 11, buyPrice: 195.45, currPrice: 118.30 },
+        { id: 'pf-15', ticker: 'IRFC', market: 'IN', qty: 20, buyPrice: 155.00, currPrice: 83.35 },
+        { id: 'pf-16', ticker: 'ITC', market: 'IN', qty: 7, buyPrice: 423.19, currPrice: 285.00 },
+        { id: 'pf-17', ticker: 'JIOFIN', market: 'IN', qty: 30, buyPrice: 349.91, currPrice: 227.50 },
+        { id: 'pf-18', ticker: 'JPL', market: 'IN', qty: 12, buyPrice: 1119.00, currPrice: 1400.90 },
+        { id: 'pf-19', ticker: 'KALYANKJIL', market: 'IN', qty: 67, buyPrice: 500.06, currPrice: 697.00 },
+        { id: 'pf-20', ticker: 'KAYCEEI', market: 'IN', qty: 1, buyPrice: 3355.00, currPrice: 761.00 },
+        { id: 'pf-21', ticker: 'KIRLFER', market: 'IN', qty: 1, buyPrice: 675.00, currPrice: 404.60 },
+        { id: 'pf-22', ticker: 'KTKBANK', market: 'IN', qty: 11, buyPrice: 197.49, currPrice: 361.95 },
+        { id: 'pf-23', ticker: 'MANAPPURAM', market: 'IN', qty: 60, buyPrice: 167.50, currPrice: 308.00 },
+        { id: 'pf-24', ticker: 'MGEL', market: 'IN', qty: 100, buyPrice: 14.00, currPrice: 17.59 },
+        { id: 'pf-25', ticker: 'NHPC', market: 'IN', qty: 28, buyPrice: 109.51, currPrice: 75.90 },
+        { id: 'pf-26', ticker: 'NSE', market: 'IN', qty: 8, buyPrice: 1785.00, currPrice: 1990.05 },
+        { id: 'pf-27', ticker: 'ONGC', market: 'IN', qty: 10, buyPrice: 296.15, currPrice: 225.30 },
+        { id: 'pf-28', ticker: 'PARASHLTH', market: 'IN', qty: 21, buyPrice: 693.00, currPrice: 938.35 },
+        { id: 'pf-29', ticker: 'RAYMOND', market: 'IN', qty: 10, buyPrice: 585.60, currPrice: 1149.00 },
+        { id: 'pf-30', ticker: 'RECLTD', market: 'IN', qty: 35, buyPrice: 437.02, currPrice: 301.85 },
+        { id: 'pf-31', ticker: 'SENCO', market: 'IN', qty: 38, buyPrice: 516.88, currPrice: 339.30 },
+        { id: 'pf-32', ticker: 'SJVN', market: 'IN', qty: 12, buyPrice: 144.11, currPrice: 57.41 },
+        { id: 'pf-33', ticker: 'SOUTHBANK', market: 'IN', qty: 55, buyPrice: 45.52, currPrice: 61.86 },
+        { id: 'pf-34', ticker: 'SUNDARMFIN', market: 'IN', qty: 6, buyPrice: 3857.59, currPrice: 4349.40 },
+        { id: 'pf-35', ticker: 'SUNPHARMA', market: 'IN', qty: 10, buyPrice: 1444.95, currPrice: 1880.90 },
+        { id: 'pf-36', ticker: 'SUZLON', market: 'IN', qty: 50, buyPrice: 68.52, currPrice: 38.25 },
+        { id: 'pf-37', ticker: 'TATAPOWER', market: 'IN', qty: 10, buyPrice: 380.00, currPrice: 348.20 },
+        { id: 'pf-38', ticker: 'TATASTEEL', market: 'IN', qty: 25, buyPrice: 186.69, currPrice: 187.00 },
+        { id: 'pf-39', ticker: 'TITAGARH', market: 'IN', qty: 2, buyPrice: 1475.00, currPrice: 737.15 },
+        { id: 'pf-40', ticker: 'TITAN', market: 'IN', qty: 5, buyPrice: 3204.80, currPrice: 4850.40 },
+        { id: 'pf-41', ticker: 'TMCV', market: 'IN', qty: 20, buyPrice: 286.54, currPrice: 433.55 },
+        { id: 'pf-42', ticker: 'TMPV', market: 'IN', qty: 20, buyPrice: 633.35, currPrice: 287.40 },
+        { id: 'pf-43', ticker: 'TORNTPHARM', market: 'IN', qty: 2, buyPrice: 3291.96, currPrice: 4670.00 },
+        { id: 'pf-44', ticker: 'VAISHALI', market: 'IN', qty: 100, buyPrice: 18.95, currPrice: 7.07 },
+        { id: 'pf-45', ticker: 'ZYDUSLIFE', market: 'IN', qty: 11, buyPrice: 1195.77, currPrice: 1191.00 }
+      ],
+      completedTodoIds: [],
+      oneAi: {
+        day: 1,
+        capital: 100000,
+        lastDailyPnl: 0,
+        lastDailyPct: 0,
+        history: [100000],
+        holdings: [
+          { ticker: 'BEL', allocation: 20000, entry: 398.00, current: 402.70, catalyst: 'Defence electronics order momentum' },
+          { ticker: 'BHARTIARTL', allocation: 20000, entry: 2095.00, current: 2106.00, catalyst: '5G ARPU expansion & breakout' },
+          { ticker: 'BAJFINANCE', allocation: 20000, entry: 1090.00, current: 1101.85, catalyst: 'AI-led disbursal efficiency' },
+          { ticker: 'ETERNAL', allocation: 20000, entry: 360.00, current: 363.95, catalyst: 'Blinkit quick-commerce surge' },
+          { ticker: 'ICICIBANK', allocation: 20000, entry: 1562.00, current: 1572.00, catalyst: 'Institutional accumulation' }
+        ]
+      },
+      intraday: [
+        { id: 1, ticker: 'BHARTIARTL', market: 'IN', dir: 'BUY', entry: 2092.00, target: 2106.00, sl: 2078.00, close: 2106.00, hit: true },
+        { id: 2, ticker: 'RELIANCE', market: 'IN', dir: 'BUY', entry: 1330.00, target: 1340.00, sl: 1320.00, close: 1340.60, hit: true },
+        { id: 3, ticker: 'LT', market: 'IN', dir: 'BUY', entry: 4135.00, target: 4158.00, sl: 4115.00, close: 4158.70, hit: true },
+        { id: 4, ticker: 'SUNPHARMA', market: 'IN', dir: 'BUY', entry: 1872.00, target: 1885.00, sl: 1860.00, close: 1885.50, hit: true },
+        { id: 5, ticker: 'META', market: 'US', dir: 'BUY', entry: 625.00, target: 641.00, sl: 618.00, close: 641.69, hit: true },
+        { id: 6, ticker: 'WMT', market: 'US', dir: 'BUY', entry: 126.20, target: 128.00, sl: 125.10, close: 128.09, hit: true },
+        { ticker: 7, ticker: 'LLY', market: 'US', dir: 'BUY', entry: 1428.00, target: 1443.00, sl: 1418.00, close: 1443.50, hit: true },
+        { id: 8, ticker: 'ZM', market: 'US', dir: 'BUY', entry: 97.90, target: 99.80, sl: 96.80, close: 99.80, hit: true },
+        { id: 9, ticker: 'AAPL', market: 'US', dir: 'BUY', entry: 354.50, target: 356.20, sl: 352.80, close: 356.27, hit: true },
+        { id: 10, ticker: 'AMD', market: 'US', dir: 'BUY', entry: 550.00, target: 565.00, sl: 540.00, close: 534.06, hit: false }
+      ]
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          return { ...DEFAULT_STATE, ...parsed };
         }
+      } catch (e) {}
+      return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    }
 
-        function toggleTask(element) {
-            element.style.backgroundColor = element.style.backgroundColor === 'var(--accent-green)' ? 'transparent' : 'var(--accent-green)';
-            element.parentElement.style.opacity = element.parentElement.style.opacity === '0.5' ? '1' : '0.5';
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    let state = loadState();
+    let scoreChartInstance = null;
+    let oneAiChartInstance = null;
+    let detailModalTicker = null;
+
+    // ==========================================
+    // HELPERS & TOASTS
+    // ==========================================
+    function showToast(msg, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      const colors = type === 'success'
+        ? 'bg-emerald-500 text-slate-950'
+        : type === 'warn'
+        ? 'bg-amber-400 text-slate-950'
+        : 'bg-rose-500 text-white';
+      el.className = `pointer-events-auto px-4 py-2.5 rounded-xl text-xs font-bold shadow-lg transition-all duration-300 ${colors}`;
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 2600);
+    }
+
+    function fmtCurrency(val, market) {
+      const sym = market === 'US' ? '$' : '₹';
+      return sym + Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function fmtINR(val) {
+      return '₹' + Math.round(val).toLocaleString('en-IN');
+    }
+
+    function evaluatePortfolioHolding(item) {
+      const ref = ALL_STOCKS.find(s => s.ticker === item.ticker.toUpperCase());
+      const pnlPct = item.buyPrice > 0 ? ((item.currPrice - item.buyPrice) / item.buyPrice) * 100 : 0;
+      let rating = 'NEUTRAL';
+      let action = 'HOLD';
+      let reason = 'Trading near fair value; monitor 50 DMA.';
+
+      if (ref) {
+        if (ref.signal === 'STRONG BUY' || (ref.signal === 'BUY' && pnlPct >= -5)) {
+          rating = 'GOOD';
+          action = pnlPct < 3 ? 'BUY MORE' : 'HOLD';
+          reason = `${ref.signal} signal (${ref.dma}, RSI ${ref.rsi}). ${ref.news}`;
+        } else if (ref.signal === 'HOLD' && pnlPct < -4) {
+          rating = 'BAD';
+          action = 'SELL';
+          reason = `Weak momentum (${ref.dma}, RSI ${ref.rsi}) with ${pnlPct.toFixed(1)}% drawdown.`;
+        } else {
+          rating = pnlPct >= 0 ? 'GOOD' : 'NEUTRAL';
+          action = pnlPct < -6 ? 'BUY MORE' : 'HOLD';
+          reason = `${ref.news} Support at ${fmtCurrency(ref.support, item.market)}.`;
         }
+      } else {
+        if (pnlPct >= 3) {
+          rating = 'GOOD';
+          action = 'HOLD';
+          reason = 'Positive momentum above cost basis.';
+        } else if (pnlPct <= -6) {
+          rating = 'BAD';
+          action = 'SELL';
+          reason = 'Down >6% from entry; review stop-loss discipline.';
+        } else {
+          rating = 'NEUTRAL';
+          action = 'HOLD';
+          reason = 'Consolidating near entry price.';
+        }
+      }
+      return { pnlPct, rating, action, reason };
+    }
 
-        function addNewTodo() {
-            const taskText = prompt("Enter new trading task:");
-            if (taskText) {
-                const todoList = document.getElementById('todo-list');
-                const newItem = document.createElement('div');
-                newItem.className = 'todo-item';
-                newItem.innerHTML = `<div class="checkbox" onclick="toggleTask(this)"></div><div class="todo-text">${taskText}</div>`;
-                todoList.appendChild(newItem);
+    // ==========================================
+    // RENDER: TOP SCOREBOARD & CHART
+    // ==========================================
+    function renderScoreboard() {
+      const hits = state.intraday.filter(i => i.hit).length;
+      const score = Math.round((hits / Math.max(1, state.intraday.length)) * 100);
+      state.scoreHistory[state.scoreHistory.length - 1].score = score;
+
+      const scoreEl = document.getElementById('top-daily-score');
+      scoreEl.textContent = score;
+      scoreEl.className = `text-4xl sm:text-5xl font-extrabold tracking-tight ${
+        score === 100 ? 'text-emerald-400' : score >= 70 ? 'text-cyan-400' : 'text-amber-400'
+      }`;
+
+      document.getElementById('mini-intraday-acc').textContent = `${hits} / ${state.intraday.length} Hit (${score}%)`;
+
+      const winnerBadge = document.getElementById('winner-badge');
+      if (state.streakDays >= 5) {
+        winnerBadge.classList.remove('hidden');
+      } else {
+        winnerBadge.classList.add('hidden');
+      }
+
+      document.getElementById('streak-counter-text').textContent = `${state.streakDays} / 5 Days`;
+      const pillsEl = document.getElementById('streak-pills');
+      pillsEl.innerHTML = '';
+      for (let d = 1; d <= 5; d++) {
+        const active = d <= state.streakDays;
+        const pill = document.createElement('div');
+        pill.className = `h-7 rounded-lg flex items-center justify-center text-[11px] font-bold border ${
+          active
+            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
+            : 'bg-slate-800/60 border-slate-700/60 text-slate-500'
+        }`;
+        pill.textContent = active ? `D${d} ✓` : `D${d}`;
+        pillsEl.appendChild(pill);
+      }
+
+      const ctx = document.getElementById('scoreTrendChart').getContext('2d');
+      const labels = state.scoreHistory.map(h => h.day);
+      const data = state.scoreHistory.map(h => h.score);
+
+      if (scoreChartInstance) {
+        scoreChartInstance.data.labels = labels;
+        scoreChartInstance.data.datasets[0].data = data;
+        scoreChartInstance.update();
+      } else {
+        scoreChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Daily Score',
+              data,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.14)',
+              borderWidth: 2.5,
+              pointBackgroundColor: '#34d399',
+              pointRadius: 4,
+              tension: 0.35,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { min: 0, max: 100, grid: { color: 'rgba(51,65,85,0.35)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+              x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
             }
+          }
+        });
+      }
+    }
+
+    // ==========================================
+    // RENDER: INDIAN & US STOCKS (TOP 20 EACH)
+    // ==========================================
+    function renderStockCards(market, containerId, searchId, filterId) {
+      const list = market === 'IN' ? INDIAN_STOCKS : US_STOCKS;
+      const query = document.getElementById(searchId).value.trim().toLowerCase();
+      const sigFilter = document.getElementById(filterId).value;
+      const container = document.getElementById(containerId);
+
+      const filtered = list.filter(s => {
+        const matchQuery = !query || s.ticker.toLowerCase().includes(query) || s.name.toLowerCase().includes(query) || s.sector.toLowerCase().includes(query);
+        const matchSig = sigFilter === 'ALL' || s.signal === sigFilter;
+        return matchQuery && matchSig;
+      });
+
+      if (!filtered.length) {
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-xs text-slate-400">No stocks match your filter.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map((s, idx) => {
+        const sigClass = s.signal === 'STRONG BUY'
+          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+          : s.signal === 'BUY'
+          ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+          : 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+        const chgClass = s.change >= 0 ? 'text-emerald-400' : 'text-rose-400';
+        const chgSign = s.change >= 0 ? '+' : '';
+        return `
+          <div class="bg-slate-900/75 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 flex flex-col justify-between gap-3 transition">
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-bold text-slate-500">#${idx + 1}</span>
+                    <h3 class="text-sm font-bold text-white">${s.ticker}</h3>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${sigClass}">${s.signal}</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 truncate max-w-[190px]">${s.name}</p>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-extrabold text-white">${fmtCurrency(s.price, s.market)}</div>
+                  <div class="text-[11px] font-semibold ${chgClass}">${chgSign}${s.change.toFixed(2)}%</div>
+                </div>
+              </div>
+              <div class="mt-2.5 grid grid-cols-3 gap-1.5 text-[10px] bg-slate-950/60 rounded-lg p-2 border border-slate-800/70">
+                <div><span class="text-slate-500 block">RSI(14)</span><span class="font-bold text-slate-200">${s.rsi}</span></div>
+                <div><span class="text-slate-500 block">1Y Target</span><span class="font-bold text-emerald-400">${fmtCurrency(s.target1Y, s.market)}</span></div>
+                <div><span class="text-slate-500 block">3Y Target</span><span class="font-bold text-cyan-400">${fmtCurrency(s.target3Y, s.market)}</span></div>
+              </div>
+              <p class="mt-2 text-[11px] text-slate-300 line-clamp-2">${s.news}</p>
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+              <span class="text-[10px] text-slate-400">${s.sector}</span>
+              <div class="flex items-center gap-1.5">
+                <button type="button" data-detail-ticker="${s.ticker}" class="btn-inspect-stock px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Details</button>
+                <button type="button" data-quick-add="${s.ticker}" class="btn-quick-add-pf px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition">+ Portfolio</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==========================================
+    // RENDER: YOUR PORTFOLIO & TO-DO SYNC
+    // ==========================================
+    function renderPortfolioAndTodo() {
+      const tbody = document.getElementById('portfolio-tbody');
+      let goodCount = 0;
+      let badCount = 0;
+      let totalInvested = 0;
+      let totalCurrent = 0;
+
+      const generatedTodos = [];
+
+      if (!state.portfolio.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-xs text-slate-400">Your portfolio is empty. Click <strong>+ Add Stocks</strong> to add holdings for AI analysis.</td></tr>`;
+      } else {
+        tbody.innerHTML = state.portfolio.map(item => {
+          const ev = evaluatePortfolioHolding(item);
+          if (ev.rating === 'GOOD') goodCount++;
+          if (ev.rating === 'BAD') badCount++;
+
+          const inv = item.qty * item.buyPrice;
+          const cur = item.qty * item.currPrice;
+          totalInvested += inv;
+          totalCurrent += cur;
+          const pnlVal = cur - inv;
+          const pnlCls = pnlVal >= 0 ? 'text-emerald-400' : 'text-rose-400';
+          const pnlSign = pnlVal >= 0 ? '+' : '';
+
+          const rateCls = ev.rating === 'GOOD'
+            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+            : ev.rating === 'BAD'
+            ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+            : 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+
+          const actCls = ev.action === 'BUY MORE'
+            ? 'text-emerald-400 font-bold'
+            : ev.action === 'SELL'
+            ? 'text-rose-400 font-bold'
+            : 'text-cyan-300 font-semibold';
+
+          const todoPriority = ev.action === 'SELL' ? 'HIGH' : ev.action === 'BUY MORE' ? 'MEDIUM' : 'LOW';
+          generatedTodos.push({
+            id: `todo-${item.id}`,
+            ticker: item.ticker,
+            market: item.market,
+            action: ev.action,
+            priority: todoPriority,
+            text: `${ev.action} ${item.ticker} (${item.qty} qty @ ${fmtCurrency(item.currPrice, item.market)}) — ${ev.reason}`
+          });
+
+          return `
+            <tr class="hover:bg-slate-900/50 transition">
+              <td class="py-3 px-3">
+                <div class="font-bold text-white">${item.ticker}</div>
+                <div class="text-[10px] text-slate-500">${item.market === 'IN' ? 'NSE' : 'US'}</div>
+              </td>
+              <td class="py-3 px-3 text-slate-200">${item.qty}</td>
+              <td class="py-3 px-3 text-slate-300">${fmtCurrency(item.buyPrice, item.market)}</td>
+              <td class="py-3 px-3 font-semibold text-white">${fmtCurrency(item.currPrice, item.market)}</td>
+              <td class="py-3 px-3 font-semibold ${pnlCls}">${pnlSign}${ev.pnlPct.toFixed(2)}%</td>
+              <td class="py-3 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${rateCls}">${ev.rating}</span></td>
+              <td class="py-3 px-3">
+                <div class="${actCls}">${ev.action}</div>
+                <div class="text-[10px] text-slate-400 max-w-[200px] truncate" title="${ev.reason}">${ev.reason}</div>
+              </td>
+              <td class="py-3 px-3 text-right">
+                <button type="button" data-remove-pf="${item.id}" class="btn-remove-pf px-2 py-1 rounded-lg text-[11px] bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 transition">Remove</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      const netPct = totalInvested > 0 ? ((totalCurrent - totalInvested) / totalInvested) * 100 : 0;
+      document.getElementById('pf-total-count').textContent = state.portfolio.length;
+      document.getElementById('pf-good-count').textContent = goodCount;
+      document.getElementById('pf-bad-count').textContent = badCount;
+      const netEl = document.getElementById('pf-net-pnl');
+      netEl.textContent = `${netPct >= 0 ? '+' : ''}${netPct.toFixed(2)}%`;
+      netEl.className = `text-lg font-bold ${netPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+      document.getElementById('badge-portfolio-count').textContent = `(${state.portfolio.length})`;
+      document.getElementById('badge-todo-count').textContent = `(${generatedTodos.length})`;
+
+      renderTodoList(generatedTodos);
+    }
+
+    function renderTodoList(todos) {
+      const container = document.getElementById('todo-list-container');
+      const filtered = todos.filter(t => {
+        const done = state.completedTodoIds.includes(t.id);
+        if (state.todoFilter === 'PENDING') return !done;
+        if (state.todoFilter === 'DONE') return done;
+        return true;
+      });
+
+      if (!filtered.length) {
+        container.innerHTML = `<div class="py-8 text-center text-xs text-slate-400">No To-Do items in this view. Add stocks in Your Portfolio to generate actionable steps.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(t => {
+        const done = state.completedTodoIds.includes(t.id);
+        const prioCls = t.priority === 'HIGH'
+          ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+          : t.priority === 'MEDIUM'
+          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+          : 'bg-slate-700/60 text-slate-300 border-slate-600';
+        return `
+          <label class="flex items-start gap-3 p-3.5 rounded-xl bg-slate-900/75 border border-slate-800 hover:border-slate-700 cursor-pointer transition ${done ? 'opacity-60' : ''}">
+            <input type="checkbox" data-todo-id="${t.id}" class="todo-checkbox mt-0.5 w-4 h-4 accent-emerald-500 rounded" ${done ? 'checked' : ''} />
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${prioCls}">${t.priority}</span>
+                <span class="text-xs font-bold text-white ${done ? 'line-through' : ''}">${t.ticker} &bull; ${t.action}</span>
+              </div>
+              <p class="text-xs text-slate-300 mt-1 ${done ? 'line-through' : ''}">${t.text}</p>
+            </div>
+          </label>
+        `;
+      }).join('');
+    }
+
+    // ==========================================
+    // RENDER: ONE AI (1 LAKH -> 10 CRORES)
+    // ==========================================
+    function renderOneAi() {
+      const o = state.oneAi;
+      document.getElementById('oneai-current-val').textContent = fmtINR(o.capital);
+      const pnlSign = o.lastDailyPnl >= 0 ? '+' : '';
+      const pnlEl = document.getElementById('oneai-daily-pnl');
+      pnlEl.textContent = `${pnlSign}${fmtINR(o.lastDailyPnl)} (${pnlSign}${o.lastDailyPct.toFixed(2)}%)`;
+      pnlEl.className = `text-lg font-bold ${o.lastDailyPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+      const pctToGoal = Math.min(100, (o.capital / 100000000) * 100);
+      document.getElementById('oneai-day-count').textContent = `Day ${o.day}`;
+      document.getElementById('oneai-progress-pct').textContent = `${pctToGoal.toFixed(2)}%`;
+      document.getElementById('oneai-progress-bar').style.width = `${Math.max(1, pctToGoal)}%`;
+
+      const tbody = document.getElementById('oneai-stocks-tbody');
+      tbody.innerHTML = o.holdings.map(h => {
+        const chg = ((h.current - h.entry) / h.entry) * 100;
+        const pnl = (h.allocation * chg) / 100;
+        const cls = pnl >= 0 ? 'text-emerald-400' : 'text-rose-400';
+        const sign = pnl >= 0 ? '+' : '';
+        return `
+          <tr class="hover:bg-slate-900/50">
+            <td class="py-2.5 px-3 font-bold text-white">${h.ticker}</td>
+            <td class="py-2.5 px-3 text-slate-300">${fmtINR(h.allocation)}</td>
+            <td class="py-2.5 px-3 text-slate-300">₹${h.entry.toFixed(2)}</td>
+            <td class="py-2.5 px-3 font-semibold text-white">₹${h.current.toFixed(2)}</td>
+            <td class="py-2.5 px-3 font-bold ${cls}">${sign}${fmtINR(pnl)} (${sign}${chg.toFixed(2)}%)</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">${h.catalyst}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const ctx = document.getElementById('oneAiChart').getContext('2d');
+      const labels = o.history.map((_, idx) => `D${idx + 1}`);
+      if (oneAiChartInstance) {
+        oneAiChartInstance.data.labels = labels;
+        oneAiChartInstance.data.datasets[0].data = o.history;
+        oneAiChartInstance.update();
+      } else {
+        oneAiChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'One AI Capital (₹)',
+              data: o.history,
+              borderColor: '#a855f7',
+              backgroundColor: 'rgba(168, 85, 247, 0.14)',
+              borderWidth: 2.5,
+              tension: 0.3,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { grid: { color: 'rgba(51,65,85,0.35)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+              x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+            }
+          }
+        });
+      }
+    }
+
+    // ==========================================
+    // RENDER: INTRADAY (10 DAILY PICKS)
+    // ==========================================
+    function renderIntraday() {
+      const tbody = document.getElementById('intraday-tbody');
+      tbody.innerHTML = state.intraday.map((row, i) => {
+        const statusBadge = row.hit
+          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">SUCCESS (+10)</span>`
+          : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">FAIL (0)</span>`;
+        return `
+          <tr class="hover:bg-slate-900/50">
+            <td class="py-2.5 px-3 text-slate-500 font-bold">${i + 1}</td>
+            <td class="py-2.5 px-3 font-bold text-white">${row.ticker} <span class="text-[10px] text-slate-500 font-normal">${row.market}</span></td>
+            <td class="py-2.5 px-3 text-emerald-400 font-semibold">${row.dir}</td>
+            <td class="py-2.5 px-3 text-slate-300">${fmtCurrency(row.entry, row.market)}</td>
+            <td class="py-2.5 px-3 text-cyan-300 font-semibold">${fmtCurrency(row.target, row.market)}</td>
+            <td class="py-2.5 px-3 text-rose-300">${fmtCurrency(row.sl, row.market)}</td>
+            <td class="py-2.5 px-3 font-semibold text-white">${fmtCurrency(row.close, row.market)}</td>
+            <td class="py-2.5 px-3">${statusBadge}</td>
+            <td class="py-2.5 px-3 text-right">
+              <button type="button" data-toggle-intra="${row.id}" class="btn-toggle-intra px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Flip</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ==========================================
+    // NAVIGATION & MODALS
+    // ==========================================
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      saveState();
+      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
+      document.getElementById(`section-${tabName}`).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        if (btn.dataset.tab === tabName) {
+          btn.classList.add('tab-active');
+          btn.classList.remove('bg-slate-900', 'text-slate-300', 'border', 'border-slate-800');
+        } else {
+          btn.classList.remove('tab-active');
+          btn.classList.add('bg-slate-900', 'text-slate-300', 'border', 'border-slate-800');
         }
-    </script>
+      });
+    }
+
+    function populatePresetDropdown() {
+      const market = document.getElementById('add-market').value;
+      const preset = document.getElementById('add-preset');
+      const list = market === 'IN' ? INDIAN_STOCKS : US_STOCKS;
+      preset.innerHTML = `<option value="">-- Custom Ticker or Select --</option>` +
+        list.map(s => `<option value="${s.ticker}">${s.ticker} — ${s.name} (${fmtCurrency(s.price, s.market)})</option>`).join('');
+    }
+
+    function openAddStockModal(prefillTicker = null) {
+      const modal = document.getElementById('modal-add-stock');
+      if (prefillTicker) {
+        const ref = ALL_STOCKS.find(s => s.ticker === prefillTicker);
+        if (ref) {
+          document.getElementById('add-market').value = ref.market;
+          populatePresetDropdown();
+          document.getElementById('add-preset').value = ref.ticker;
+          document.getElementById('add-ticker').value = ref.ticker;
+          document.getElementById('add-buy-price').value = ref.price.toFixed(2);
+          document.getElementById('add-curr-price').value = ref.price.toFixed(2);
+        }
+      } else {
+        populatePresetDropdown();
+      }
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeAddStockModal() {
+      const modal = document.getElementById('modal-add-stock');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openDetailModal(ticker) {
+      const s = ALL_STOCKS.find(x => x.ticker === ticker);
+      if (!s) return;
+      detailModalTicker = s.ticker;
+      document.getElementById('detail-ticker').textContent = s.ticker;
+      document.getElementById('detail-name').textContent = `${s.name} (${s.sector})`;
+      document.getElementById('detail-signal').textContent = s.signal;
+      document.getElementById('detail-body').innerHTML = `
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5"><span class="text-slate-400 block">Current Price</span><span class="text-sm font-bold text-white">${fmtCurrency(s.price, s.market)}</span></div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5"><span class="text-slate-400 block">DMA Trend</span><span class="text-sm font-bold text-cyan-300">${s.dma}</span></div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5"><span class="text-slate-400 block">Support / Resistance</span><span class="text-sm font-bold text-slate-200">${fmtCurrency(s.support, s.market)} / ${fmtCurrency(s.resistance, s.market)}</span></div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5"><span class="text-slate-400 block">1Y / 3Y Targets</span><span class="text-sm font-bold text-emerald-400">${fmtCurrency(s.target1Y, s.market)} / ${fmtCurrency(s.target3Y, s.market)}</span></div>
+        </div>
+        <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3">
+          <span class="text-slate-400 font-semibold block mb-1">News &amp; Fundamental Cross-Reference</span>
+          <p class="text-slate-200">${s.news}</p>
+        </div>
+      `;
+      const modal = document.getElementById('modal-stock-detail');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    // ==========================================
+    // EVENT LISTENERS
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', () => {
+      switchTab(state.activeTab || 'indian');
+      renderScoreboard();
+      renderStockCards('IN', 'indian-stocks-grid', 'indian-search', 'indian-signal-filter');
+      renderStockCards('US', 'us-stocks-grid', 'us-search', 'us-signal-filter');
+      renderPortfolioAndTodo();
+      renderOneAi();
+      renderIntraday();
+
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      document.getElementById('indian-search').addEventListener('input', () => renderStockCards('IN', 'indian-stocks-grid', 'indian-search', 'indian-signal-filter'));
+      document.getElementById('indian-signal-filter').addEventListener('change', () => renderStockCards('IN', 'indian-stocks-grid', 'indian-search', 'indian-signal-filter'));
+      document.getElementById('us-search').addEventListener('input', () => renderStockCards('US', 'us-stocks-grid', 'us-search', 'us-signal-filter'));
+      document.getElementById('us-signal-filter').addEventListener('change', () => renderStockCards('US', 'us-stocks-grid', 'us-search', 'us-signal-filter'));
+
+      // Delegate stock card clicks
+      document.body.addEventListener('click', e => {
+        const inspectBtn = e.target.closest('.btn-inspect-stock');
+        if (inspectBtn) {
+          openDetailModal(inspectBtn.dataset.detailTicker);
+          return;
+        }
+        const quickAddBtn = e.target.closest('.btn-quick-add-pf');
+        if (quickAddBtn) {
+          openAddStockModal(quickAddBtn.dataset.quickAdd);
+          return;
+        }
+        const removePfBtn = e.target.closest('.btn-remove-pf');
+        if (removePfBtn) {
+          state.portfolio = state.portfolio.filter(p => p.id !== removePfBtn.dataset.removePf);
+          saveState();
+          renderPortfolioAndTodo();
+          showToast('Removed stock from Your Portfolio', 'warn');
+          return;
+        }
+        const flipIntraBtn = e.target.closest('.btn-toggle-intra');
+        if (flipIntraBtn) {
+          const id = Number(flipIntraBtn.dataset.toggleIntra);
+          const item = state.intraday.find(r => r.id === id);
+          if (item) {
+            item.hit = !item.hit;
+            item.close = item.hit ? item.target : Number((item.sl * 0.995).toFixed(2));
+            saveState();
+            renderIntraday();
+            renderScoreboard();
+          }
+        }
+      });
+
+      // Add Stocks Modal Controls
+      document.getElementById('btn-open-add-stock').addEventListener('click', () => openAddStockModal());
+      document.getElementById('btn-open-add-stock-top').addEventListener('click', () => openAddStockModal());
+      document.getElementById('btn-close-add-modal').addEventListener('click', closeAddStockModal);
+      document.getElementById('btn-cancel-add-modal').addEventListener('click', closeAddStockModal);
+      document.getElementById('add-market').addEventListener('change', populatePresetDropdown);
+
+      document.getElementById('add-preset').addEventListener('change', e => {
+        const ticker = e.target.value;
+        const ref = ALL_STOCKS.find(s => s.ticker === ticker);
+        if (ref) {
+          document.getElementById('add-ticker').value = ref.ticker;
+          document.getElementById('add-buy-price').value = ref.price.toFixed(2);
+          document.getElementById('add-curr-price').value = ref.price.toFixed(2);
+        }
+      });
+
+      document.getElementById('form-add-stock').addEventListener('submit', e => {
+        e.preventDefault();
+        const market = document.getElementById('add-market').value;
+        const ticker = document.getElementById('add-ticker').value.trim().toUpperCase();
+        const qty = Number(document.getElementById('add-qty').value);
+        const buyPrice = Number(document.getElementById('add-buy-price').value);
+        const currPrice = Number(document.getElementById('add-curr-price').value);
+        if (!ticker || qty <= 0 || buyPrice <= 0 || currPrice <= 0) return;
+
+        state.portfolio.unshift({
+          id: 'pf-' + Date.now(),
+          ticker,
+          market,
+          qty,
+          buyPrice,
+          currPrice
+        });
+        saveState();
+        closeAddStockModal();
+        switchTab('portfolio');
+        renderPortfolioAndTodo();
+        showToast(`${ticker} added to Your Portfolio & synced to To-Do List!`);
+      });
+
+      // Detail Modal
+      document.getElementById('btn-close-detail-modal').addEventListener('click', () => {
+        document.getElementById('modal-stock-detail').classList.add('hidden');
+        document.getElementById('modal-stock-detail').classList.remove('flex');
+      });
+      document.getElementById('btn-detail-add-pf').addEventListener('click', () => {
+        document.getElementById('modal-stock-detail').classList.add('hidden');
+        document.getElementById('modal-stock-detail').classList.remove('flex');
+        if (detailModalTicker) openAddStockModal(detailModalTicker);
+      });
+
+      // To-Do Filters & Checkboxes
+      document.querySelectorAll('.todo-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.todoFilter = btn.dataset.todoFilter;
+          document.querySelectorAll('.todo-filter-btn').forEach(b => {
+            b.className = b === btn
+              ? 'todo-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 text-slate-950'
+              : 'todo-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300';
+          });
+          renderPortfolioAndTodo();
+        });
+      });
+
+      document.getElementById('todo-list-container').addEventListener('change', e => {
+        if (e.target.classList.contains('todo-checkbox')) {
+          const id = e.target.dataset.todoId;
+          if (e.target.checked) {
+            if (!state.completedTodoIds.includes(id)) state.completedTodoIds.push(id);
+          } else {
+            state.completedTodoIds = state.completedTodoIds.filter(x => x !== id);
+          }
+          saveState();
+          renderPortfolioAndTodo();
+        }
+      });
+
+      // One AI Simulation
+      document.getElementById('btn-oneai-sim-day').addEventListener('click', () => {
+        const o = state.oneAi;
+        o.day += 1;
+        let newCap = 0;
+        const alloc = o.capital / o.holdings.length;
+        o.holdings.forEach(h => {
+          const pct = (Math.random() * 4.2) - 0.8; // +3.4% to -0.8% simulated AI edge
+          h.entry = h.current;
+          h.current = Number((h.current * (1 + pct / 100)).toFixed(2));
+          h.allocation = alloc;
+          newCap += alloc * (1 + pct / 100);
+        });
+        o.lastDailyPnl = newCap - o.capital;
+        o.lastDailyPct = (o.lastDailyPnl / o.capital) * 100;
+        o.capital = newCap;
+        o.history.push(Math.round(o.capital));
+        saveState();
+        renderOneAi();
+        showToast(`One AI Day ${o.day}: ${o.lastDailyPnl >= 0 ? '+' : ''}${fmtINR(o.lastDailyPnl)}`);
+      });
+
+      document.getElementById('btn-oneai-rebalance').addEventListener('click', () => {
+        const pool = [...INDIAN_STOCKS].sort(() => 0.5 - Math.random()).slice(0, 5);
+        const alloc = state.oneAi.capital / 5;
+        state.oneAi.holdings = pool.map(s => ({
+          ticker: s.ticker,
+          allocation: alloc,
+          entry: s.price,
+          current: s.price,
+          catalyst: s.news
+        }));
+        saveState();
+        renderOneAi();
+        showToast('One AI rebalanced into top 5 momentum stocks!');
+      });
+
+      // Intraday & EOD Audit
+      function runEodAudit(forcePerfect = false) {
+        if (forcePerfect) {
+          state.intraday.forEach(r => { r.hit = true; r.close = r.target; });
+        } else {
+          state.intraday.forEach(r => {
+            r.hit = Math.random() > 0.15;
+            r.close = r.hit ? r.target : Number((r.sl * 0.996).toFixed(2));
+          });
+        }
+        const hits = state.intraday.filter(r => r.hit).length;
+        const score = Math.round((hits / state.intraday.length) * 100);
+        if (score === 100) {
+          state.streakDays = Math.min(5, state.streakDays + 1);
+          showToast(state.streakDays >= 5 ? '100/100! 5-Day WINNER Streak Achieved!' : `100/100! Streak: ${state.streakDays}/5 Days`);
+        } else {
+          state.streakDays = 0;
+          showToast(`EOD Score: ${score}/100. Streak reset to 0.`, 'warn');
+        }
+        saveState();
+        renderIntraday();
+        renderScoreboard();
+      }
+
+      document.getElementById('btn-quick-audit').addEventListener('click', () => runEodAudit(false));
+      document.getElementById('btn-intraday-perfect').addEventListener('click', () => runEodAudit(true));
+      document.getElementById('btn-intraday-mixed').addEventListener('click', () => runEodAudit(false));
+
+      // Language Toggle (EN / தமிழ்)
+      document.getElementById('btn-lang-toggle').addEventListener('click', () => {
+        state.lang = state.lang === 'EN' ? 'TA' : 'EN';
+        document.querySelector('[data-i18n="scoreboard_label"]').textContent =
+          state.lang === 'TA' ? 'தினசரி வெற்றி விகிதம் (Intraday + Long-Term)' : 'Daily Success Rate (Intraday + Long-Term)';
+        document.querySelector('[data-i18n="streak_label"]').textContent =
+          state.lang === 'TA' ? '5-நாள் 100/100 வெற்றியாளர் இலக்கு' : '5-Day 100/100 Winner Streak';
+        saveState();
+        showToast(state.lang === 'TA' ? 'தமிழ் முகப்பு இயக்கப்பட்டது' : 'English mode enabled');
+      });
+    });
+  </script>
 </body>
 </html>
