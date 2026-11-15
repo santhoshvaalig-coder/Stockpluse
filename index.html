@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockPulse AI - Live Analytics</title>
+    <title>StockPulse AI - Complete Dashboard</title>
     <style>
         :root {
             --bg-color: #0f1115;
@@ -98,17 +98,20 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
         }
 
         .tab-btn {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
-            padding: 12px 24px;
+            padding: 12px 20px;
             border-radius: 20px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
         .tab-btn.active {
@@ -124,6 +127,9 @@
             color: var(--accent-blue);
             border-left: 4px solid var(--accent-blue);
             padding-left: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .stock-card {
@@ -132,11 +138,6 @@
             padding: 20px;
             margin-bottom: 20px;
             border: 1px solid var(--border-color);
-            transition: transform 0.2s;
-        }
-
-        .stock-card:hover {
-            transform: translateY(-2px);
         }
 
         .stock-header {
@@ -207,9 +208,6 @@
             border-radius: 8px;
             font-size: 12px;
             margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .target-bar {
@@ -231,10 +229,62 @@
             margin-top: 15px;
             font-size: 13px;
             font-weight: 500;
+        }
+
+        /* Portfolio Table Styles */
+        .portfolio-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .portfolio-table th, .portfolio-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .portfolio-table th {
+            background: rgba(0,0,0,0.2);
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .portfolio-table td { font-size: 14px; }
+
+        /* To-Do List Styles */
+        .todo-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .todo-item {
             display: flex;
             align-items: center;
-            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
+
+        .todo-item:last-child { border-bottom: none; }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid var(--accent-blue);
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .todo-text { font-size: 15px; }
+
+        .section-panel { display: block; }
     </style>
 </head>
 <body>
@@ -265,12 +315,14 @@
 
     <!-- Navigation Tabs -->
     <div class="tabs">
-        <button class="tab-btn active">Intraday Engine (Top 10)</button>
-        <button class="tab-btn">Long-Term (1Y/3Y Graham+Buffett)</button>
+        <button class="tab-btn active" onclick="showSection('intraday')">Intraday Engine</button>
+        <button class="tab-btn" onclick="showSection('longterm')">Graham + Buffett Long-Term</button>
+        <button class="tab-btn" onclick="showSection('portfolio')">Your Portfolio</button>
+        <button class="tab-btn" onclick="showSection('todo')">Trading To-Do List</button>
     </div>
 
-    <!-- INTRADY SECTION -->
-    <div id="intraday-section">
+    <!-- INTRADAY SECTION -->
+    <div id="intraday-section" class="section-panel">
         <div class="section-title">Autonomous Intraday Picks</div>
         
         <!-- Stock 1 -->
@@ -293,7 +345,7 @@
                 <div class="analysis-box">
                     <span class="box-title">Technical Status</span>
                     <div class="price-row"><span class="label">VWAP</span><span class="val">₹1,255.00</span></div>
-                    <div class="price-row"><span class="label">RSI (15m)</span><span class="val">62 (Bullish)</span></div>
+                    <div class="price-row"><span class="label">RSI (15m)</span><span class="val up">62 (Bullish)</span></div>
                     <div class="price-row"><span class="label">Status</span><span class="val up">Active</span></div>
                 </div>
             </div>
@@ -323,14 +375,14 @@
                     <span class="box-title">Technical Status</span>
                     <div class="price-row"><span class="label">VWAP</span><span class="val">$141.20</span></div>
                     <div class="price-row"><span class="label">RSI (15m)</span><span class="val">58 (Neutral)</span></div>
-                    <div class="price-row"><span class="label">Status</span><span class="val up">Watching</span></div>
+                    <div class="price-row"><span class="label">Status</span><span class="val">Watching</span></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- LONG TERM SECTION -->
-    <div id="longterm-section">
+    <div id="longterm-section" class="section-panel" style="display: none;">
         <div class="section-title">Graham & Buffett Growth Portfolio</div>
 
         <!-- Stock 1 -->
@@ -344,7 +396,7 @@
             </div>
             
             <div class="graham-badge">
-                <span>💡 Graham Net-Net Compliance: Strong Margin of Safety & Economic Moat via EV leadership.</span>
+                💡 Graham Net-Net Compliance: Strong Margin of Safety & Economic Moat via EV leadership.
             </div>
 
             <div class="analysis-grid">
@@ -362,9 +414,7 @@
             </div>
 
             <div class="target-bar">
-                <div>
-                    <span class="box-title" style="margin:0;">AI Price Forecast</span>
-                </div>
+                <span class="label">AI Price Forecast:</span>
                 <div>
                     <span class="label">1Y Target:</span><span class="val up" style="margin-right: 15px;">₹1,250</span>
                     <span class="label">3Y Target:</span><span class="val up">₹1,850</span>
@@ -383,7 +433,7 @@
             </div>
             
             <div class="graham-badge">
-                <span>💡 Buffett Moat: Unmatched Brand Loyalty & High Free Cash Flow Generation.</span>
+                💡 Buffett Moat: Unmatched Brand Loyalty & High Free Cash Flow Generation.
             </div>
 
             <div class="analysis-grid">
@@ -395,15 +445,13 @@
                 </div>
                 <div class="analysis-box">
                     <span class="box-title">Product Catalyst</span>
-                    <div class="price-row"><span class="label">Launch</span><span class="val">AI Ecosystem Integration</span></div>
+                    <div class="price-row"><span class="label">Launch</span><span class="val">AI Ecosystem</span></div>
                     <div class="price-row"><span class="label">Impact</span><span class="val up">Service Revenue</span></div>
                 </div>
             </div>
 
             <div class="target-bar">
-                <div>
-                    <span class="box-title" style="margin:0;">AI Price Forecast</span>
-                </div>
+                <span class="label">AI Price Forecast:</span>
                 <div>
                     <span class="label">1Y Target:</span><span class="val up" style="margin-right: 15px;">$270.00</span>
                     <span class="label">3Y Target:</span><span class="val up">$380.00</span>
@@ -412,5 +460,95 @@
         </div>
     </div>
 
+    <!-- NEW: YOUR PORTFOLIO SECTION -->
+    <div id="portfolio-section" class="section-panel" style="display: none;">
+        <div class="section-title">
+            Your Personal Portfolio
+            <button onclick="alert('Add Stock Feature Triggered')" style="background: var(--accent-blue); border: none; color: white; padding: 6px 12px; border-radius: 15px; font-size: 12px; cursor: pointer;">+ Add Stock</button>
+        </div>
+        
+        <table class="portfolio-table">
+            <thead>
+                <tr>
+                    <th>Stock</th>
+                    <th>Qty</th>
+                    <th>Avg Price</th>
+                    <th>Current</th>
+                    <th>P&L</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>RELIANCE</strong><br><span style="font-size: 11px; color: var(--text-muted);">NSE</span></td>
+                    <td>50</td>
+                    <td>₹1,200</td>
+                    <td>₹1,250</td>
+                    <td><span class="up">+₹2,500 (+4.1%)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>NVDA</strong><br><span style="font-size: 11px; color: var(--text-muted);">NASDAQ</span></td>
+                    <td>10</td>
+                    <td>$120.00</td>
+                    <td>$140.00</td>
+                    <td><span class="up">+$200.00 (+16.6%)</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- NEW: TRADING TO-DO LIST SECTION -->
+    <div id="todo-section" class="section-panel" style="display: none;">
+        <div class="section-title">
+            Trading To-Do & Action Items
+            <button onclick="addNewTodo()" style="background: var(--accent-blue); border: none; color: white; padding: 6px 12px; border-radius: 15px; font-size: 12px; cursor: pointer;">+ Add Task</button>
+        </div>
+
+        <div class="todo-container" id="todo-list">
+            <div class="todo-item">
+                <div class="checkbox" onclick="toggleTask(this)"></div>
+                <div class="todo-text">Check Pre-market Volume Spike for RELIANCE at 9:15 AM</div>
+            </div>
+            <div class="todo-item">
+                <div class="checkbox" onclick="toggleTask(this)"></div>
+                <div class="todo-text">Verify Stop-Loss placement for NVDA position</div>
+            </div>
+            <div class="todo-item">
+                <div class="checkbox" onclick="toggleTask(this)"></div>
+                <div class="todo-text">Review 15m VWAP before initiating Intraday entry</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section-panel').forEach(panel => {
+                panel.style.display = 'none';
+            });
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Show target section and set active tab
+            document.getElementById(sectionId + '-section').style.display = 'block';
+            event.currentTarget.classList.add('active');
+        }
+
+        function toggleTask(element) {
+            element.style.backgroundColor = element.style.backgroundColor === 'var(--accent-green)' ? 'transparent' : 'var(--accent-green)';
+            element.parentElement.style.opacity = element.parentElement.style.opacity === '0.5' ? '1' : '0.5';
+        }
+
+        function addNewTodo() {
+            const taskText = prompt("Enter new trading task:");
+            if (taskText) {
+                const todoList = document.getElementById('todo-list');
+                const newItem = document.createElement('div');
+                newItem.className = 'todo-item';
+                newItem.innerHTML = `<div class="checkbox" onclick="toggleTask(this)"></div><div class="todo-text">${taskText}</div>`;
+                todoList.appendChild(newItem);
+            }
+        }
+    </script>
 </body>
 </html>
