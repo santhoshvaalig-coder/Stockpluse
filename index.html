@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockPulse AI - Live Analytics</title>
+    <style>
+        :root {
+            --bg-color: #0f1115;
+            --card-bg: #1a1d24;
+            --text-main: #ffffff;
+            --text-muted: #a0a5b0;
+            --accent-blue: #3186ff;
+            --accent-green: #00c853;
+            --accent-red: #ff3d00;
+            --border-color: #2a2e39;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+        }
+
+        .header-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .top-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .score-box {
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 38px;
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        .score-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .streak-meter {
+            display: flex;
+            gap: 8px;
+        }
+
+        .streak-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #333;
+        }
+
+        .streak-dot.active {
+            background-color: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        .accuracy-graph {
+            height: 80px;
+            width: 100%;
+            background: #111;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            padding: 5px 0;
+            gap: 4px;
+        }
+
+        .accuracy-bar {
+            flex: 1;
+            background: rgba(0, 200, 83, 0.3);
+            border-top: 3px solid var(--accent-green);
+            transition: height 0.5s ease;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 12px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: var(--text-main);
+            box-shadow: 0 4px 15px rgba(49, 134, 255, 0.3);
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+            border-left: 4px solid var(--accent-blue);
+            padding-left: 10px;
+        }
+
+        .stock-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+        }
+
+        .stock-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .stock-info h3 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .stock-info span {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-india { background: rgba(255, 152, 0, 0.2); color: #ff9800; border: 1px solid #ff9800; }
+        .badge-us { background: rgba(33, 150, 243, 0.2); color: #2196f3; border: 1px solid #2196f3; }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .analysis-box {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .box-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .price-row:last-child { margin-bottom: 0; }
+        .label { font-size: 13px; }
+        .val { font-size: 14px; font-weight: bold; }
+        .up { color: var(--accent-green); }
+        .down { color: var(--accent-red); }
+
+        .graham-badge {
+            background: rgba(255, 235, 59, 0.1);
+            border: 1px solid #ffee58;
+            color: #ffee58;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .target-bar {
+            background: #111;
+            padding: 12px 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .risk-alert {
+            background: rgba(255, 61, 0, 0.15);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header with Scoreboard and Accuracy Graph -->
+    <div class="header-container">
+        <div class="top-stats">
+            <div class="score-box">
+                <div class="score-value">95/100</div>
+                <div class="score-label">Daily Success Rate</div>
+            </div>
+            <div class="streak-meter">
+                <div class="streak-dot active"></div>
+                <div class="streak-dot active"></div>
+                <div class="streak-dot active"></div>
+                <div class="streak-dot active"></div>
+                <div class="streak-dot"></div>
+            </div>
+        </div>
+        <div class="accuracy-graph">
+            <div class="accuracy-bar" style="height: 75%;"></div>
+            <div class="accuracy-bar" style="height: 82%;"></div>
+            <div class="accuracy-bar" style="height: 65%;"></div>
+            <div class="accuracy-bar" style="height: 90%;"></div>
+            <div class="accuracy-bar" style="height: 95%;"></div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active">Intraday Engine (Top 10)</button>
+        <button class="tab-btn">Long-Term (1Y/3Y Graham+Buffett)</button>
+    </div>
+
+    <!-- INTRADY SECTION -->
+    <div id="intraday-section">
+        <div class="section-title">Autonomous Intraday Picks</div>
+        
+        <!-- Stock 1 -->
+        <div class="stock-card">
+            <div class="stock-header">
+                <div class="stock-info">
+                    <h3>RELIANCE</h3>
+                    <span>NSE • Energy & Telecom</span>
+                </div>
+                <span class="badge badge-india">INDIA</span>
+            </div>
+            
+            <div class="analysis-grid">
+                <div class="analysis-box">
+                    <span class="box-title">Intraday Levels</span>
+                    <div class="price-row"><span class="label">Entry</span><span class="val">₹1,250.00</span></div>
+                    <div class="price-row"><span class="label">Target</span><span class="val up">₹1,287.50</span></div>
+                    <div class="price-row"><span class="label">Stop-Loss</span><span class="val down">₹1,232.00</span></div>
+                </div>
+                <div class="analysis-box">
+                    <span class="box-title">Technical Status</span>
+                    <div class="price-row"><span class="label">VWAP</span><span class="val">₹1,255.00</span></div>
+                    <div class="price-row"><span class="label">RSI (15m)</span><span class="val">62 (Bullish)</span></div>
+                    <div class="price-row"><span class="label">Status</span><span class="val up">Active</span></div>
+                </div>
+            </div>
+            <div class="risk-alert">
+                ⚠️ Volume Spike Detected. Strict Stop-Loss mandatory.
+            </div>
+        </div>
+
+        <!-- Stock 2 -->
+        <div class="stock-card">
+            <div class="stock-header">
+                <div class="stock-info">
+                    <h3>NVDA</h3>
+                    <span>NASDAQ • Semiconductors</span>
+                </div>
+                <span class="badge badge-us">US</span>
+            </div>
+            
+            <div class="analysis-grid">
+                <div class="analysis-box">
+                    <span class="box-title">Intraday Levels</span>
+                    <div class="price-row"><span class="label">Entry</span><span class="val">$140.00</span></div>
+                    <div class="price-row"><span class="label">Target</span><span class="val up">$146.00</span></div>
+                    <div class="price-row"><span class="label">Stop-Loss</span><span class="val down">$137.50</span></div>
+                </div>
+                <div class="analysis-box">
+                    <span class="box-title">Technical Status</span>
+                    <div class="price-row"><span class="label">VWAP</span><span class="val">$141.20</span></div>
+                    <div class="price-row"><span class="label">RSI (15m)</span><span class="val">58 (Neutral)</span></div>
+                    <div class="price-row"><span class="label">Status</span><span class="val up">Watching</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LONG TERM SECTION -->
+    <div id="longterm-section">
+        <div class="section-title">Graham & Buffett Growth Portfolio</div>
+
+        <!-- Stock 1 -->
+        <div class="stock-card">
+            <div class="stock-header">
+                <div class="stock-info">
+                    <h3>TATA MOTORS</h3>
+                    <span>NSE • Automotive / EV</span>
+                </div>
+                <span class="badge badge-india">INDIA</span>
+            </div>
+            
+            <div class="graham-badge">
+                <span>💡 Graham Net-Net Compliance: Strong Margin of Safety & Economic Moat via EV leadership.</span>
+            </div>
+
+            <div class="analysis-grid">
+                <div class="analysis-box">
+                    <span class="box-title">Fundamental Metrics</span>
+                    <div class="price-row"><span class="label">CMP</span><span class="val">₹950.00</span></div>
+                    <div class="price-row"><span class="label">P/E Ratio</span><span class="val">18.5</span></div>
+                    <div class="price-row"><span class="label">Debt/Equity</span><span class="val">0.4</span></div>
+                </div>
+                <div class="analysis-box">
+                    <span class="box-title">Product Catalyst</span>
+                    <div class="price-row"><span class="label">Launch</span><span class="val">Curvv EV Scaling</span></div>
+                    <div class="price-row"><span class="label">Impact</span><span class="val up">High Margin</span></div>
+                </div>
+            </div>
+
+            <div class="target-bar">
+                <div>
+                    <span class="box-title" style="margin:0;">AI Price Forecast</span>
+                </div>
+                <div>
+                    <span class="label">1Y Target:</span><span class="val up" style="margin-right: 15px;">₹1,250</span>
+                    <span class="label">3Y Target:</span><span class="val up">₹1,850</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock 2 -->
+        <div class="stock-card">
+            <div class="stock-header">
+                <div class="stock-info">
+                    <h3>AAPL</h3>
+                    <span>NASDAQ • Consumer Electronics</span>
+                </div>
+                <span class="badge badge-us">US</span>
+            </div>
+            
+            <div class="graham-badge">
+                <span>💡 Buffett Moat: Unmatched Brand Loyalty & High Free Cash Flow Generation.</span>
+            </div>
+
+            <div class="analysis-grid">
+                <div class="analysis-box">
+                    <span class="box-title">Fundamental Metrics</span>
+                    <div class="price-row"><span class="label">CMP</span><span class="val">$225.00</span></div>
+                    <div class="price-row"><span class="label">P/E Ratio</span><span class="val">30.0</span></div>
+                    <div class="price-row"><span class="label">ROE</span><span class="val">>150%</span></div>
+                </div>
+                <div class="analysis-box">
+                    <span class="box-title">Product Catalyst</span>
+                    <div class="price-row"><span class="label">Launch</span><span class="val">AI Ecosystem Integration</span></div>
+                    <div class="price-row"><span class="label">Impact</span><span class="val up">Service Revenue</span></div>
+                </div>
+            </div>
+
+            <div class="target-bar">
+                <div>
+                    <span class="box-title" style="margin:0;">AI Price Forecast</span>
+                </div>
+                <div>
+                    <span class="label">1Y Target:</span><span class="val up" style="margin-right: 15px;">$270.00</span>
+                    <span class="label">3Y Target:</span><span class="val up">$380.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
