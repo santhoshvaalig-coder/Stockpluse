@@ -1,34 +1,34 @@
 import os
 import requests
+import google.generativeai as genai
 
-API_KEY = os.getenv('API_KEY')
-SYMBOLS = {
-    'RELIANCE': '₹1,250.00',
-    'NVDA': '$140.00',
-    'TATAMOTORS': '₹950.00',
-    'AAPL': '$225.00'
-}
+# API சாவிகளை அமைத்தல்
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+news_api_key = os.environ["NEWS_API_KEY"]
 
-with open('index.html', 'r', encoding='utf-8') as f:
-    html_content = f.read()
+# செய்திகளைத் திரட்டுதல்
+news_url = f"https://newsapi.org/v2/top-headlines?category=business&language=en&apiKey={news_api_key}"
+articles = requests.get(news_url).json().get("articles", [])
+headlines = "\n".join([a["title"] for a in articles[:5]])
 
-for symbol, default_price in SYMBOLS.items():
-    url = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={API_KEY}'
-    response = requests.get(url)
-    data = response.json()
-    
-    try:
-        price = data['Global Quote']['05. price']
-        if symbol in ['RELIANCE', 'TATAMOTORS']:
-            price_formatted = f'₹{float(price):,.2f}'
-        else:
-            price_formatted = f'${float(price):,.2f}'
-        html_content = html_content.replace(default_price, price_formatted)
-        print(f"Updated {symbol} to {price_formatted}")
-    except (KeyError, ValueError, TypeError) as e:
-        print(f"Error fetching data for {symbol}: {e}")
+# Gemini மூலம் பகுப்பாய்வு
+model = genai.GenerativeModel('gemini-pro')
+prompt = f"Analyze these financial headlines and recommend 5 stocks:\n{headlines}"
+analysis = model.generate_content(prompt).text
 
-with open('index.html', 'w', encoding='utf-8') as f:
+# index.html கோப்பைப் புதுப்பித்தல்
+html_content = f"""
+<!DOCTYPE html>
+<html>
+<head><title>Autonomous Stocks</title></head>
+<body>
+    <h1>Autonomous Intraday Picks</h1>
+    <pre>{analysis}</pre>
+</body>
+</html>
+"""
+
+with open('index.html', 'w') as f:
     f.write(html_content)
 
 print("Index.html updated successfully.")
