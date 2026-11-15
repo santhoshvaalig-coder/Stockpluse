@@ -2,13 +2,33 @@ import os
 import requests
 
 API_KEY = os.getenv('API_KEY')
-SYMBOLS = ['RELIANCE', 'NVDA', 'TATAMOTORS', 'AAPL']
-DATA = {}
+SYMBOLS = {
+    'RELIANCE': '₹1,250.00',
+    'NVDA': '$140.00',
+    'TATAMOTORS': '₹950.00',
+    'AAPL': '$225.00'
+}
 
-for symbol in SYMBOLS:
+with open('index.html', 'r', encoding='utf-8') as f:
+    html_content = f.read()
+
+for symbol, default_price in SYMBOLS.items():
     url = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={API_KEY}'
     response = requests.get(url)
-    DATA[symbol] = response.json()
+    data = response.json()
+    
+    try:
+        price = data['Global Quote']['05. price']
+        if symbol in ['RELIANCE', 'TATAMOTORS']:
+            price_formatted = f'₹{float(price):,.2f}'
+        else:
+            price_formatted = f'${float(price):,.2f}'
+        html_content = html_content.replace(default_price, price_formatted)
+        print(f"Updated {symbol} to {price_formatted}")
+    except (KeyError, ValueError, TypeError) as e:
+        print(f"Error fetching data for {symbol}: {e}")
 
-print(DATA)
-# Add logic to update index.html here
+with open('index.html', 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+print("Index.html updated successfully.")
